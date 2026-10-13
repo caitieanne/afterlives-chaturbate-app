@@ -91,7 +91,7 @@ function pick(rowId, key, list) {
     row.appendChild(b);
   });
 }
-pick('shapes', 'console_shape', ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'circle', 'none']);
+pick('shapes', 'console_shape', ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'harlequin', 'circle', 'none']);
 pick('colors', 'console_color', AfterlivesConsole.COLORS.map(function (c) { return c.id; }));
 </script>
 </body></html>

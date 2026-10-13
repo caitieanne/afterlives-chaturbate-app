@@ -107,8 +107,8 @@ function menuOf(settings) {
   return out;
 }
 </script>
-<script>// The cryptid's console: a bubbly see-through plastic handheld that the cryptid lives inside, in one of seven shapes (coffin, crescent moon,
-// heart, star, box, diamond, circle) and ten colors (the same ones as the Afterlives game's console). Drawn by this script as SVG, no images.
+<script>// The cryptid's console: a bubbly see-through plastic handheld that the cryptid lives inside, in one of eight shapes (coffin, crescent moon,
+// heart, star, box, diamond, harlequin, circle) and ten colors (the same ones as the Afterlives game's console). Drawn by this script as SVG, no images.
 // Each shape is the outline of the screen; the plastic is that same outline drawn with a thick, round-jointed stroke, so every shape gets
 // an even, bubbly band of plastic all round, however pointy it is.
 // The screen shows a placeholder dusk sky for now: the official screen art goes in the BACKDROP part below.
@@ -261,10 +261,13 @@ var AfterlivesConsole = (function () {
     },
     star: { w: 95.1, h: 90.5, path: star(), safe: [0.33, 0.36, 0.67, 0.73], pill: [0.5, 0.82] },
     box: { w: 100, h: 76, path: ['M', 14, 0, 'L', 86, 0, 'Q', 100, 0, 100, 14, 'L', 100, 62, 'Q', 100, 76, 86, 76, 'L', 14, 76, 'Q', 0, 76, 0, 62, 'L', 0, 14, 'Q', 0, 0, 14, 0, 'Z'], safe: [0.12, 0.08, 0.88, 0.76], pill: [0.5, 0.87] },
-    diamond: { w: 84, h: 100, path: poly([[42, 0], [84, 50], [42, 100], [0, 50]], 9), safe: [0.29, 0.26, 0.71, 0.66], pill: [0.5, 0.75] },
+    // a cut gem: flat table on top, slanted crown, and the point at the bottom
+    diamond: { w: 100, h: 86, path: poly([[24, 0], [76, 0], [100, 28], [50, 86], [0, 28]], 7), safe: [0.24, 0.1, 0.76, 0.6], pill: [0.5, 0.69] },
+    // the four-sided harlequin diamond
+    harlequin: { w: 84, h: 100, path: poly([[42, 0], [84, 50], [42, 100], [0, 50]], 9), safe: [0.29, 0.26, 0.71, 0.66], pill: [0.5, 0.75] },
     circle: { w: 100, h: 100, path: ['M', 0, 50, 'A', 50, 50, 0, 1, 0, 100, 50, 'A', 50, 50, 0, 1, 0, 0, 50, 'Z'], safe: [0.2, 0.14, 0.8, 0.7], pill: [0.5, 0.8] },
   };
-  var SHAPE_NAMES = { crescent: 'moon', crescent_moon: 'moon', moon: 'moon', square: 'box', box: 'box', round: 'circle' };
+  var SHAPE_NAMES = { gem: 'diamond', rhombus: 'harlequin', crescent: 'moon', crescent_moon: 'moon', moon: 'moon', square: 'box', box: 'box', round: 'circle' };
 
   /** A shape by its name, or null for "none" (the cryptid on its own, no console). Unknown names give the coffin. */
   function shapeOf(name) {
@@ -875,7 +878,7 @@ function pick(rowId, key, list) {
     row.appendChild(b);
   });
 }
-pick('shapes', 'console_shape', ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'circle', 'none']);
+pick('shapes', 'console_shape', ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'harlequin', 'circle', 'none']);
 pick('colors', 'console_color', AfterlivesConsole.COLORS.map(function (c) { return c.id; }));
 </script>
 </body></html>

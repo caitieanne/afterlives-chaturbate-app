@@ -46,7 +46,7 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
 | --- | --- | --- | --- |
 | `character` | choice or text: `lumi`, `boo`, `bigfoot` | `lumi` | Which cryptid |
 | `pet_name` | text | (the character's name) | Shown on the name tag and in chat lines |
-| `console_shape` | choice or text: `coffin`, `moon`, `heart`, `star`, `box`, `diamond`, `circle`, `none` | `coffin` | The handheld console the cryptid lives in (`none`: it stands on the stream by itself) |
+| `console_shape` | choice or text: `coffin`, `moon`, `heart`, `star`, `box`, `diamond`, `harlequin`, `circle`, `none` | `coffin` | The handheld console the cryptid lives in (`none`: it stands on the stream by itself) |
 | `console_color` | choice or text: `cauldron`, `nessie`, `gloomberry`, `coven`, `ghoul_gum`, `vampire`, `pumpkin`, `slime`, `tombstone`, `ghost` | `coven` | The console's see-through plastic (the Afterlives game's console colors) |
 | `tip_wink` | number | 1 | Tokens for a wink (empty or 0 = off) |
 | `tip_kiss` | number | 5 | Tokens for a kiss |
@@ -67,7 +67,7 @@ It is see-through, so place it over your scene.
 
 ## Developing
 
-- `src/overlay/console.js` is the console: its seven shapes, ten colors and layout. It goes in the overlay's JS slot ahead of `overlay.js`. The screen
+- `src/overlay/console.js` is the console: its eight shapes, ten colors and layout. It goes in the overlay's JS slot ahead of `overlay.js`. The screen
   shows a placeholder dusk sky for now (the `BACKDROP` part); the official screen art will replace it.
 - `src/shared.js` is the tip rules (`pickReaction`, `commandReaction`, `menuOf`), used by both the app and the overlay.
 - `src/handlers/*.js` are the event handlers; `src/overlay/overlay.{html,js}` is the overlay.

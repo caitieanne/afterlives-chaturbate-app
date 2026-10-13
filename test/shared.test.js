@@ -47,7 +47,7 @@ console.log('shared.js: all checks passed');
 
 // the console: every shape and color resolves, and every shape's path is whole numbers, not NaN
 const C = require('../src/overlay/console.js');
-for (const name of ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'circle']) {
+for (const name of ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'harlequin', 'circle']) {
   const shape = C.shapeOf(name);
   assert.ok(shape, name);
   const d = C.pathText(shape.path, 3, 10, 10);
