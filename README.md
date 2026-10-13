@@ -22,7 +22,7 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
 
 ## Put it in the Developer Portal
 
-1. `npm run build` (or `node tools/build.js`) makes `dist/` with one file per slot, numbered in the order below. Open `dist/preview.html` to try it first.
+1. `npm run build` (or `node tools/build.js`) makes `dist/` with one file per slot, numbered as below. Open `dist/preview.html` to try it first.
 2. In devportal.cb.dev, **Create new app** and name it. Fill in the summary and description from `LISTING.md`.
 3. Paste each file into its slot:
 
@@ -33,6 +33,7 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
    | `3-handler-chat-message.js` | Event handler: Chat Message |
    | `4-handler-user-enter.js` | Event handler: User Enter |
    | `5-handler-fanclub-join.js` | Event handler: Fanclub Join |
+| `9-handler-broadcast-start.js` | Event handler: Broadcast Start |
    | `6-overlay-cryptid-html.html` | Broadcast Overlay named `cryptid`: HTML |
    | `7-overlay-cryptid-js.js` | Broadcast Overlay `cryptid`: JS |
    | `8-overlay-shared-code.js` | Broadcast Overlay `cryptid`: Shared code |
@@ -57,6 +58,13 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
 | `chat_commands` | checkbox | on | Chat can use `/wink /kiss /dance /party` (one per person every 10 seconds) |
 | `greet` | checkbox | on | The cryptid waves at followers and token holders who come in |
 | `thank_in_chat` | checkbox | off | Also thank tippers with a notice in chat |
+| `chat_notices_per_hour` | number | 10 | The most chat notices the app sends in an hour (0: none) |
+| `speak_per_hour` | number | 6 | How many times an hour the cryptid says something on its own, like "Hydrate, chat!" (0: only when someone plays with it; at most 60) |
+| `tip_goal` | number | (empty) | A tip goal in tokens. Empty or 0: no goal. Tips count toward it, and reaching it sets off a big celebration |
+| `tip_goal_name` | text | Tip goal | What the goal is for, shown on the goal card |
+| `show_goal` | checkbox | on | Show the goal card (name, progress bar, tokens so far) on the overlay |
+| `goal_repeats` | checkbox | on | Once the goal is reached, start it again (off: it stays full until the next show) |
+| `goal_reset_each_show` | checkbox | on | Start the goal from zero when a show starts (off: progress carries over between shows) |
 
 A tip sets off the priciest reaction it reaches, and a tip below all of them still gets a wink, so every tip is answered. The amounts are the
 broadcaster's to change any time in the app's settings screen.

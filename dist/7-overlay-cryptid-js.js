@@ -437,7 +437,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
 
   // ---- what the cryptid is doing right now ----
   var react = null; // { kind, t0 }
-  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0 };
+  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0 };
   var hearts = []; // the hearts a kiss sends flying: { x, y, vx, vy, t0 }
 
   function pose(t) {
@@ -464,7 +464,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
           s.sway = Math.sin(r * 7) * 3;
           s.mouth = 'open';
           s.flare = 0.7 + 0.3 * Math.sin(r * 14);
-        } else if (k === 'party') {
+        } else if (k === 'party' || k === 'goal') {
           s.jump = -Math.abs(Math.sin(r * 6)) * 8;
           s.sway = Math.sin(r * 6) * 4;
           s.mouth = 'open';
@@ -687,7 +687,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
 
   // ---- bubbles, floating emoji, confetti ----
   var bubbleTimer = null;
+  var lastSaid = 0;
   function say(text, ms) {
+    lastSaid = Date.now();
     bubble.textContent = text;
     bubble.className = 'show';
     clearTimeout(bubbleTimer);
@@ -733,12 +735,27 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
     dance: ['{u} made me dance!', 'Dancing for {u}!', 'Wheee! Thank you, {u}!'],
     party: ['{u} threw a PARTY!!', 'PARTY for {u}!', '{u}!!! Confetti!'],
     hello: ['Hi {u}! Welcome in.', 'Welcome, {u}!', '{u} is here! Hi!'],
+    goal: ['GOAL! {g}! Thank you, {u}!', 'We did it: {g}! {u}, you star!', '{g}: DONE! Thank you all!'],
   };
+  // what it says on its own, now and then (how often is the broadcaster's "speak_per_hour"); never anything about money
+  var IDLE = [
+    'Hydrate, chat!',
+    'Type /wink to say hi!',
+    'Who wants a /kiss?',
+    '*fixes the ring light*',
+    'Posture check!',
+    'You all look lovely tonight.',
+    'Type /dance and I will dance!',
+    'Stretch your hands for a sec.',
+    'Best chat on the internet.',
+    '*waves at the lurkers*',
+    'Remember to blink!',
+  ];
   function lineFor(kind, user) {
     var list = LINES[kind] || LINES.wink;
-    return list[Math.floor(Math.random() * list.length)].replace('{u}', user || 'someone');
+    return list[Math.floor(Math.random() * list.length)].replace('{u}', user || 'someone').replace('{g}', goalName);
   }
-  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'] };
+  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
 
   // ---- events from the app ----
   $overlay.on(
@@ -746,6 +763,17 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
     function (e) {
       var kind = DUR[e.kind] ? e.kind : 'wink';
       react = { kind: kind, t0: (performance.now() - t0) / 1000 };
+      if (kind === 'goal') {
+        if (e.goal) goalName = String(e.goal).slice(0, 30);
+        say(lineFor('goal', e.user), 7000);
+        floatUp(EMOJI.goal, 12);
+        confetti(90);
+        if (goalEl) goalEl.className = 'cheer';
+        setTimeout(function () {
+          if (goalEl) goalEl.className = '';
+        }, 6000);
+        return;
+      }
       say(e.amount ? lineFor(kind, e.user).replace('!', ' (' + e.amount + ')!') : lineFor(kind, e.user), kind === 'party' ? 5200 : 4200);
       floatUp(EMOJI[kind] || EMOJI.wink, kind === 'party' ? 8 : 4);
       if (kind === 'party') confetti(40);
@@ -769,4 +797,52 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
   setTimeout(function () {
     say('Hi! I am ' + NAME + '.', 3200);
   }, 1200);
+
+  // ---- the tip goal card (when the broadcaster has set a goal) ----
+  var goalEl = null;
+  var goalName = String(settings.tip_goal_name || 'Tip goal').slice(0, 30);
+  function showGoal(g) {
+    if (!g || !(g.goal > 0) || settings.show_goal === false) {
+      if (goalEl) goalEl.style.display = 'none';
+      return;
+    }
+    if (!goalEl) {
+      goalEl = document.createElement('div');
+      goalEl.id = 'goal';
+      stage.appendChild(goalEl);
+    }
+    goalName = String(g.name || goalName).slice(0, 30);
+    var pct = Math.max(0, Math.min(100, (g.progress / g.goal) * 100));
+    goalEl.style.display = 'block';
+    goalEl.innerHTML = '';
+    var h = document.createElement('h4');
+    h.textContent = goalName;
+    var bar = document.createElement('div');
+    bar.className = 'bar';
+    var fill = document.createElement('i');
+    fill.style.width = pct + '%';
+    bar.appendChild(fill);
+    var n = document.createElement('div');
+    n.className = 'n';
+    n.textContent = Math.min(g.progress, g.goal) + ' / ' + g.goal;
+    goalEl.appendChild(h);
+    goalEl.appendChild(bar);
+    goalEl.appendChild(n);
+  }
+  function kvGet(k, d) {
+    return typeof $kv === 'object' && $kv && typeof $kv.get === 'function' ? $kv.get(k, d) : d;
+  }
+  showGoal({ progress: Number(kvGet('goal_progress', 0)) || 0, goal: goalOf(settings), name: goalName });
+  $overlay.on('goal', function (g) {
+    showGoal(g);
+  });
+
+  // ---- things it says on its own, as often as the broadcaster likes (never over someone else's moment) ----
+  var every = idleEverySeconds(settings);
+  if (every > 0) {
+    setInterval(function () {
+      if (Date.now() - lastSaid < 20000 || react) return;
+      say(IDLE[Math.floor(Math.random() * IDLE.length)], 4200);
+    }, every * 1000);
+  }
 })();

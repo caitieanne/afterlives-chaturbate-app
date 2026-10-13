@@ -26,6 +26,12 @@
   #menu h4 { margin: 0 0 3px; font-size: 11px; color: #c9a8f2; text-align: center; letter-spacing: 1px; }
   #menu div { display: flex; justify-content: space-between; gap: 12px; line-height: 1.5; }
   #menu b { color: #9be8c4; }
+  #goal { position: absolute; right: 6px; top: 62px; width: 118px; padding: 6px 9px 7px; border-radius: 9px; background: rgba(36, 22, 52, 0.84); border: 2px solid rgba(201, 182, 242, 0.75); color: #f1e8ff; font-size: 11px; font-weight: bold; display: none; transition: transform 0.3s; }
+  #goal h4 { margin: 0 0 4px; font-size: 11px; color: #c9a8f2; text-align: center; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #goal .bar { height: 9px; border-radius: 5px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
+  #goal .bar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #b79cff, #ff9ec8); transition: width 0.6s ease-out; }
+  #goal .n { margin-top: 3px; text-align: center; color: #9be8c4; font-size: 11px; }
+  #goal.cheer { transform: scale(1.12); border-color: #ff9ec8; box-shadow: 0 0 14px rgba(255, 158, 200, 0.7); }
   .float { position: absolute; font-size: 26px; pointer-events: none; animation: rise 1.9s ease-out forwards; }
   @keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-130px) scale(1.25); } }
   .confetti { position: absolute; top: -10px; width: 8px; height: 12px; pointer-events: none; animation: fall 2.6s ease-in forwards; }
@@ -53,6 +59,19 @@ var $settings = {};
 q.forEach(function (v, k) { $settings[k] = v === 'true' || v === '1' ? (/^[0-9]+$/.test(v) && k.indexOf('tip_') === 0 ? Number(v) : true) : v === 'false' || v === '0' ? (k.indexOf('tip_') === 0 ? 0 : false) : /^[0-9]+$/.test(v) ? Number(v) : v; });
 var $handlers = {};
 var $overlay = { on: function (n, cb) { $handlers[n] = cb; }, emit: function (n, d) { if ($handlers[n]) $handlers[n](d); } };
+// a pretend $kv, so the tip buttons can count toward the goal the way the Tip Received handler does
+var $kvData = {};
+var $kv = { get: function (k, d) { return k in $kvData ? $kvData[k] : d; }, set: function (k, v) { $kvData[k] = v; } };
+function previewTip(n) {
+  var goal = goalOf($settings);
+  var step = goal ? goalStep($kv.get('goal_progress', 0), n, goal, $settings.goal_repeats !== false) : null;
+  if (step) {
+    $kv.set('goal_progress', step.progress);
+    $overlay.emit('goal', { progress: step.progress, goal: goal, name: $settings.tip_goal_name || 'Tip goal' });
+  }
+  if (step && step.reached) $overlay.emit('react', { kind: 'goal', user: 'Viewer', amount: n, goal: $settings.tip_goal_name || 'Tip goal' });
+  else $overlay.emit('react', { kind: pickReaction(n, $settings), user: 'Viewer', amount: n });
+}
 </script>
 <script>// SHARED CODE (the app's "Shared code" slot). It runs before every event handler, so the handlers can call these. Plain functions only: anything
 // that has to survive between events lives in $kv, never in a variable here.
@@ -106,6 +125,63 @@ function menuOf(settings) {
     return a.tokens - b.tokens;
   });
   return out;
+}
+
+// ---- the tip goal (the broadcaster's own, from the app settings: Chaturbate does not give apps the room's goal) ----
+
+// The goal in tokens, or 0 when there is none (the default).
+function goalOf(settings) {
+  var v = Number(settings.tip_goal);
+  return isFinite(v) && v >= 1 ? Math.round(v) : 0;
+}
+
+// Adds a tip to the goal. Returns the new progress and whether this tip reached the goal. With `repeat` (the default) the goal starts again
+// with whatever spilled over; without it, the goal stays full and is not celebrated twice.
+function goalStep(progress, tokens, goal, repeat) {
+  progress = Math.max(0, Number(progress) || 0);
+  if (!(goal > 0)) return { progress: progress, reached: false };
+  if (!repeat && progress >= goal) return { progress: goal, reached: false };
+  var next = progress + Math.max(0, Number(tokens) || 0);
+  if (next < goal) return { progress: next, reached: false };
+  return { progress: repeat ? next % goal : goal, reached: true };
+}
+
+// ---- how chatty it is ----
+
+// How many seconds between the things the cryptid says on its own, from "speak_per_hour" (6 a hour by default; 0 or empty: only when someone
+// plays with it). At most once a minute.
+function idleEverySeconds(settings) {
+  var v = settings.speak_per_hour;
+  if (v === undefined) v = 6;
+  v = Number(v);
+  if (!isFinite(v) || v <= 0) return 0;
+  return Math.round(3600 / Math.min(60, v));
+}
+
+// Whether the app may send another chat notice now, given the times (ms) of the ones it sent recently, keeping to "chat_notices_per_hour" (10 by
+// default; 0 or empty: none). Returns the times to keep, with now added when it may.
+function noticeAllowed(stamps, now, settings) {
+  var cap = settings.chat_notices_per_hour;
+  if (cap === undefined) cap = 10;
+  cap = Number(cap);
+  var recent = (Array.isArray(stamps) ? stamps : []).filter(function (t) {
+    return now - t < 3600000;
+  });
+  if (!isFinite(cap) || cap < 1 || recent.length >= cap) return { ok: false, stamps: recent };
+  recent.push(now);
+  return { ok: true, stamps: recent };
+}
+
+// Sends a chat notice if the hourly cap allows it (event handlers only: it uses $kv and $room).
+function sendCappedNotice(text) {
+  var check = noticeAllowed($kv.get('notice_times', []), Date.now(), $settings);
+  $kv.set('notice_times', check.stamps);
+  if (check.ok) $room.sendNotice(text);
+}
+
+// The goal as the overlay shows it.
+function goalState(progress) {
+  return { progress: progress, goal: goalOf($settings), name: String($settings.tip_goal_name || 'Tip goal').slice(0, 30) };
 }
 </script>
 <script>// The painted rooms for the console screen, made by tools/build.js from art/rooms (do not edit by hand).
@@ -547,7 +623,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
 
   // ---- what the cryptid is doing right now ----
   var react = null; // { kind, t0 }
-  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0 };
+  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0 };
   var hearts = []; // the hearts a kiss sends flying: { x, y, vx, vy, t0 }
 
   function pose(t) {
@@ -574,7 +650,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
           s.sway = Math.sin(r * 7) * 3;
           s.mouth = 'open';
           s.flare = 0.7 + 0.3 * Math.sin(r * 14);
-        } else if (k === 'party') {
+        } else if (k === 'party' || k === 'goal') {
           s.jump = -Math.abs(Math.sin(r * 6)) * 8;
           s.sway = Math.sin(r * 6) * 4;
           s.mouth = 'open';
@@ -797,7 +873,9 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
 
   // ---- bubbles, floating emoji, confetti ----
   var bubbleTimer = null;
+  var lastSaid = 0;
   function say(text, ms) {
+    lastSaid = Date.now();
     bubble.textContent = text;
     bubble.className = 'show';
     clearTimeout(bubbleTimer);
@@ -843,12 +921,27 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
     dance: ['{u} made me dance!', 'Dancing for {u}!', 'Wheee! Thank you, {u}!'],
     party: ['{u} threw a PARTY!!', 'PARTY for {u}!', '{u}!!! Confetti!'],
     hello: ['Hi {u}! Welcome in.', 'Welcome, {u}!', '{u} is here! Hi!'],
+    goal: ['GOAL! {g}! Thank you, {u}!', 'We did it: {g}! {u}, you star!', '{g}: DONE! Thank you all!'],
   };
+  // what it says on its own, now and then (how often is the broadcaster's "speak_per_hour"); never anything about money
+  var IDLE = [
+    'Hydrate, chat!',
+    'Type /wink to say hi!',
+    'Who wants a /kiss?',
+    '*fixes the ring light*',
+    'Posture check!',
+    'You all look lovely tonight.',
+    'Type /dance and I will dance!',
+    'Stretch your hands for a sec.',
+    'Best chat on the internet.',
+    '*waves at the lurkers*',
+    'Remember to blink!',
+  ];
   function lineFor(kind, user) {
     var list = LINES[kind] || LINES.wink;
-    return list[Math.floor(Math.random() * list.length)].replace('{u}', user || 'someone');
+    return list[Math.floor(Math.random() * list.length)].replace('{u}', user || 'someone').replace('{g}', goalName);
   }
-  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'] };
+  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
 
   // ---- events from the app ----
   $overlay.on(
@@ -856,6 +949,17 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
     function (e) {
       var kind = DUR[e.kind] ? e.kind : 'wink';
       react = { kind: kind, t0: (performance.now() - t0) / 1000 };
+      if (kind === 'goal') {
+        if (e.goal) goalName = String(e.goal).slice(0, 30);
+        say(lineFor('goal', e.user), 7000);
+        floatUp(EMOJI.goal, 12);
+        confetti(90);
+        if (goalEl) goalEl.className = 'cheer';
+        setTimeout(function () {
+          if (goalEl) goalEl.className = '';
+        }, 6000);
+        return;
+      }
       say(e.amount ? lineFor(kind, e.user).replace('!', ' (' + e.amount + ')!') : lineFor(kind, e.user), kind === 'party' ? 5200 : 4200);
       floatUp(EMOJI[kind] || EMOJI.wink, kind === 'party' ? 8 : 4);
       if (kind === 'party') confetti(40);
@@ -879,6 +983,54 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
   setTimeout(function () {
     say('Hi! I am ' + NAME + '.', 3200);
   }, 1200);
+
+  // ---- the tip goal card (when the broadcaster has set a goal) ----
+  var goalEl = null;
+  var goalName = String(settings.tip_goal_name || 'Tip goal').slice(0, 30);
+  function showGoal(g) {
+    if (!g || !(g.goal > 0) || settings.show_goal === false) {
+      if (goalEl) goalEl.style.display = 'none';
+      return;
+    }
+    if (!goalEl) {
+      goalEl = document.createElement('div');
+      goalEl.id = 'goal';
+      stage.appendChild(goalEl);
+    }
+    goalName = String(g.name || goalName).slice(0, 30);
+    var pct = Math.max(0, Math.min(100, (g.progress / g.goal) * 100));
+    goalEl.style.display = 'block';
+    goalEl.innerHTML = '';
+    var h = document.createElement('h4');
+    h.textContent = goalName;
+    var bar = document.createElement('div');
+    bar.className = 'bar';
+    var fill = document.createElement('i');
+    fill.style.width = pct + '%';
+    bar.appendChild(fill);
+    var n = document.createElement('div');
+    n.className = 'n';
+    n.textContent = Math.min(g.progress, g.goal) + ' / ' + g.goal;
+    goalEl.appendChild(h);
+    goalEl.appendChild(bar);
+    goalEl.appendChild(n);
+  }
+  function kvGet(k, d) {
+    return typeof $kv === 'object' && $kv && typeof $kv.get === 'function' ? $kv.get(k, d) : d;
+  }
+  showGoal({ progress: Number(kvGet('goal_progress', 0)) || 0, goal: goalOf(settings), name: goalName });
+  $overlay.on('goal', function (g) {
+    showGoal(g);
+  });
+
+  // ---- things it says on its own, as often as the broadcaster likes (never over someone else's moment) ----
+  var every = idleEverySeconds(settings);
+  if (every > 0) {
+    setInterval(function () {
+      if (Date.now() - lastSaid < 20000 || react) return;
+      say(IDLE[Math.floor(Math.random() * IDLE.length)], 4200);
+    }, every * 1000);
+  }
 })();
 </script>
 <script>
@@ -886,7 +1038,7 @@ var tipRow = document.getElementById('tips');
 [1, 5, 15, 50].forEach(function (n) {
   var b = document.createElement('button');
   b.textContent = 'tip ' + n + ' -> ' + pickReaction(n, $settings);
-  b.onclick = function () { $overlay.emit('react', { kind: pickReaction(n, $settings), user: 'Viewer', amount: n }); };
+  b.onclick = function () { previewTip(n); };
   tipRow.appendChild(b);
 });
 ['wink', 'kiss', 'dance', 'party', 'hello'].forEach(function (k) {

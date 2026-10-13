@@ -31,6 +31,7 @@ write('2-handler-tip-received.js', read('handlers/tip-received.js'));
 write('3-handler-chat-message.js', read('handlers/chat-message.js'));
 write('4-handler-user-enter.js', read('handlers/user-enter.js'));
 write('5-handler-fanclub-join.js', read('handlers/fanclub-join.js'));
+write('9-handler-broadcast-start.js', read('handlers/broadcast-start.js'));
 write('6-overlay-cryptid-html.html', html);
 write('7-overlay-cryptid-js.js', js);
 write('8-overlay-shared-code.js', shared); // the overlay's own shared-code slot gets the same functions (it cannot see the app's)
@@ -65,6 +66,19 @@ var $settings = {};
 q.forEach(function (v, k) { $settings[k] = v === 'true' || v === '1' ? (/^[0-9]+$/.test(v) && k.indexOf('tip_') === 0 ? Number(v) : true) : v === 'false' || v === '0' ? (k.indexOf('tip_') === 0 ? 0 : false) : /^[0-9]+$/.test(v) ? Number(v) : v; });
 var $handlers = {};
 var $overlay = { on: function (n, cb) { $handlers[n] = cb; }, emit: function (n, d) { if ($handlers[n]) $handlers[n](d); } };
+// a pretend $kv, so the tip buttons can count toward the goal the way the Tip Received handler does
+var $kvData = {};
+var $kv = { get: function (k, d) { return k in $kvData ? $kvData[k] : d; }, set: function (k, v) { $kvData[k] = v; } };
+function previewTip(n) {
+  var goal = goalOf($settings);
+  var step = goal ? goalStep($kv.get('goal_progress', 0), n, goal, $settings.goal_repeats !== false) : null;
+  if (step) {
+    $kv.set('goal_progress', step.progress);
+    $overlay.emit('goal', { progress: step.progress, goal: goal, name: $settings.tip_goal_name || 'Tip goal' });
+  }
+  if (step && step.reached) $overlay.emit('react', { kind: 'goal', user: 'Viewer', amount: n, goal: $settings.tip_goal_name || 'Tip goal' });
+  else $overlay.emit('react', { kind: pickReaction(n, $settings), user: 'Viewer', amount: n });
+}
 </script>
 <script>${shared}</script>
 <script>${js}</script>
@@ -73,7 +87,7 @@ var tipRow = document.getElementById('tips');
 [1, 5, 15, 50].forEach(function (n) {
   var b = document.createElement('button');
   b.textContent = 'tip ' + n + ' -> ' + pickReaction(n, $settings);
-  b.onclick = function () { $overlay.emit('react', { kind: pickReaction(n, $settings), user: 'Viewer', amount: n }); };
+  b.onclick = function () { previewTip(n); };
   tipRow.appendChild(b);
 });
 ['wink', 'kiss', 'dance', 'party', 'hello'].forEach(function (k) {
@@ -106,4 +120,4 @@ pick('rooms', 'room', ['dusk'].concat(Object.keys(typeof AFTERLIVES_ROOMS === 'o
 </body></html>
 `;
 write('preview.html', preview);
-console.log('built dist/: 8 slot files and preview.html (' + roomNames.length + ' rooms, overlay JS ' + Math.round(js.length / 1024) + ' KB)');
+console.log('built dist/: 9 slot files and preview.html (' + roomNames.length + ' rooms, overlay JS ' + Math.round(js.length / 1024) + ' KB)');
