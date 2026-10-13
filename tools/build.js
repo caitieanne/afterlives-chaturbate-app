@@ -15,7 +15,8 @@ const write = (name, text) => fs.writeFileSync(path.join(DIST, name), text);
 
 const shared = read('shared.js');
 const html = read('overlay/overlay.html');
-const js = read('overlay/overlay.js');
+// the overlay's JS slot is the console (its shapes and colors) followed by the cryptid itself
+const js = read('overlay/console.js') + '\n' + read('overlay/overlay.js');
 
 // the slots, named as the IDE names them
 write('1-app-shared-code.js', shared);
@@ -45,7 +46,9 @@ const preview = `<!doctype html>
 <div id="box">${html}</div>
 <div class="row" id="tips"></div>
 <div class="row" id="chars"></div>
-<small>The checks show it is see-through. Settings in the address: ?character=boo&amp;show_menu=1&amp;tip_kiss=10</small>
+<div class="row" id="shapes"></div>
+<div class="row" id="colors"></div>
+<small>The checks show it is see-through. Settings in the address: ?character=boo&amp;console_shape=heart&amp;console_color=ghoul_gum&amp;show_menu=1</small>
 </div></div>
 <script>
 // a pretend Chaturbate: $settings from the address, and an $overlay that hands events straight to the overlay's handlers
@@ -78,6 +81,18 @@ var chars = document.getElementById('chars');
   b.onclick = function () { q.set('character', c); location.search = q.toString(); };
   chars.appendChild(b);
 });
+function pick(rowId, key, list) {
+  var row = document.getElementById(rowId);
+  list.forEach(function (v) {
+    var b = document.createElement('button');
+    b.textContent = v;
+    if (($settings[key] || '') === v) b.style.background = '#8b5fa8';
+    b.onclick = function () { q.set(key, v); location.search = q.toString(); };
+    row.appendChild(b);
+  });
+}
+pick('shapes', 'console_shape', ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'harlequin', 'circle', 'none']);
+pick('colors', 'console_color', AfterlivesConsole.COLORS.map(function (c) { return c.id; }));
 </script>
 </body></html>
 `;

@@ -6,7 +6,8 @@
 
 **Description:**
 Add a little cryptid to your stream! Choose Lumi the ring-light moth, Boo the cam ghost, or Bigfoot the blurry influencer, and add the `cryptid`
-overlay to OBS as a Browser source (480 x 360, see-through).
+overlay to OBS as a Browser source (480 x 360, see-through). Your cryptid lives inside a bubbly see-through handheld console: pick its
+shape (coffin, crescent moon, heart, star, box, diamond, harlequin or circle) and one of ten plastic colors, or no console at all.
 
 What it does:
 - Tips set off a reaction: a wink, a kiss, a dance or a party. You choose how many tokens each one needs in the app settings, and you can change them any time. A tip below all of them still gets a wink.

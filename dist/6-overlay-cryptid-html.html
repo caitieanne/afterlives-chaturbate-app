@@ -1,4 +1,4 @@
-<!-- Broadcast Overlay "cryptid" HTML. Recommended size 480 x 360. Everything is drawn by the overlay's own script (no images, no outside files). -->
+<!-- Broadcast Overlay "cryptid" HTML. Recommended size 480 x 360. Everything is drawn by the overlay's own script (no images, no outside files), console included. -->
 <style>
   html, body { margin: 0; background: transparent; overflow: hidden; font-family: ui-monospace, Menlo, Consolas, monospace; }
   #stage { position: absolute; left: 0; top: 0; right: 0; bottom: 0; }
@@ -14,6 +14,7 @@
   .float { position: absolute; font-size: 26px; pointer-events: none; animation: rise 1.9s ease-out forwards; }
   @keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-130px) scale(1.25); } }
   .confetti { position: absolute; top: -10px; width: 8px; height: 12px; pointer-events: none; animation: fall 2.6s ease-in forwards; }
+  @keyframes twinkle { 0%, 100% { opacity: 0.25; } 50% { opacity: 1; } }
   @keyframes fall { 0% { transform: translateY(0) rotate(0); opacity: 1; } 100% { transform: translateY(380px) rotate(520deg); opacity: 0.9; } }
 </style>
 <div id="stage">
