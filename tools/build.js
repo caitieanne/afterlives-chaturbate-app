@@ -15,8 +15,15 @@ const write = (name, text) => fs.writeFileSync(path.join(DIST, name), text);
 
 const shared = read('shared.js');
 const html = read('overlay/overlay.html');
-// the overlay's JS slot is the console (its shapes and colors) followed by the cryptid itself
-const js = read('overlay/console.js') + '\n' + read('overlay/overlay.js');
+// The painted rooms (art/rooms/*.webp) baked in as image addresses, since the overlay may not load files of its own. The dusk sky needs none.
+const ROOMS_DIR = path.join(ROOT, 'art', 'rooms');
+const roomNames = fs.existsSync(ROOMS_DIR) ? fs.readdirSync(ROOMS_DIR).filter(f => f.endsWith('.webp')).sort() : [];
+const rooms =
+  '// The painted rooms for the console screen, made by tools/build.js from art/rooms (do not edit by hand).\nvar AFTERLIVES_ROOMS = {\n' +
+  roomNames.map(f => '  ' + f.replace(/\.webp$/, '') + ": 'data:image/webp;base64," + fs.readFileSync(path.join(ROOMS_DIR, f)).toString('base64') + "',").join('\n') +
+  '\n};\n';
+// the overlay's JS slot is the rooms, the console (its shapes and colors), then the cryptid itself
+const js = rooms + read('overlay/console.js') + '\n' + read('overlay/overlay.js');
 
 // the slots, named as the IDE names them
 write('1-app-shared-code.js', shared);
@@ -48,6 +55,7 @@ const preview = `<!doctype html>
 <div class="row" id="chars"></div>
 <div class="row" id="shapes"></div>
 <div class="row" id="colors"></div>
+<div class="row" id="rooms"></div>
 <small>The checks show it is see-through. Settings in the address: ?character=boo&amp;console_shape=heart&amp;console_color=ghoul_gum&amp;show_menu=1</small>
 </div></div>
 <script>
@@ -93,8 +101,9 @@ function pick(rowId, key, list) {
 }
 pick('shapes', 'console_shape', ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'harlequin', 'circle', 'none']);
 pick('colors', 'console_color', AfterlivesConsole.COLORS.map(function (c) { return c.id; }));
+pick('rooms', 'room', ['dusk'].concat(Object.keys(typeof AFTERLIVES_ROOMS === 'object' ? AFTERLIVES_ROOMS : {})));
 </script>
 </body></html>
 `;
 write('preview.html', preview);
-console.log('built dist/: 8 slot files and preview.html');
+console.log('built dist/: 8 slot files and preview.html (' + roomNames.length + ' rooms, overlay JS ' + Math.round(js.length / 1024) + ' KB)');

@@ -2,7 +2,8 @@
 // heart, star, box, diamond, harlequin, circle) and ten colors (the same ones as the Afterlives game's console). Drawn by this script as SVG, no images.
 // Each shape is the outline of the screen; the plastic is that same outline drawn with a thick, round-jointed stroke, so every shape gets
 // an even, bubbly band of plastic all round, however pointy it is.
-// The screen shows a placeholder dusk sky for now: the official screen art goes in the BACKDROP part below.
+// The screen shows a room: the dusk sky (drawn here) or one of the painted rooms in art/rooms, which the build bakes into the overlay as
+// AFTERLIVES_ROOMS (the overlay may not load image files of its own).
 
 var AfterlivesConsole = (function () {
   // ---- colors (names and plastic tones from the game's console colors) ----
@@ -160,6 +161,13 @@ var AfterlivesConsole = (function () {
   };
   var SHAPE_NAMES = { gem: 'diamond', rhombus: 'harlequin', crescent: 'moon', crescent_moon: 'moon', moon: 'moon', square: 'box', box: 'box', round: 'circle' };
 
+  /** The painted room for a name, as an image address, or null for the dusk sky (the default, and anything not known). */
+  function roomOf(name) {
+    var rooms = typeof AFTERLIVES_ROOMS === 'object' && AFTERLIVES_ROOMS ? AFTERLIVES_ROOMS : {};
+    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '');
+    return Object.prototype.hasOwnProperty.call(rooms, key) ? rooms[key] : null;
+  }
+
   /** A shape by its name, or null for "none" (the cryptid on its own, no console). Unknown names give the coffin. */
   function shapeOf(name) {
     var key = String(name === undefined || name === null || name === '' ? 'coffin' : name).toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
@@ -244,11 +252,16 @@ var AfterlivesConsole = (function () {
     var screen = document.createElement('div');
     screen.id = 'screen';
     screen.style.cssText = 'position:absolute;overflow:hidden;';
-    // BACKDROP: a placeholder dusk sky with stars. The official screen art replaces this (an image uploaded to the app, as its background).
+    // BACKDROP: the room the broadcaster picked, or the dusk sky with twinkling stars
     var backdrop = document.createElement('div');
     backdrop.style.cssText = 'position:absolute;left:0;top:0;right:0;bottom:0;background:radial-gradient(ellipse at 50% 115%, #6b3f8f 0%, #3a2160 38%, #1b1233 75%, #120c22 100%);';
     screen.appendChild(backdrop);
-    for (var i = 0; i < 18; i++) {
+    var room = roomOf(settings.room);
+    if (room) {
+      backdrop.style.background = '#120c22 url(' + room + ') center 45% / cover no-repeat';
+      backdrop.style.imageRendering = 'pixelated';
+    }
+    for (var i = 0; i < (room ? 0 : 18); i++) {
       var s = document.createElement('div');
       var big = i % 5 === 0;
       s.style.cssText = 'position:absolute;width:' + (big ? 3 : 2) + 'px;height:' + (big ? 3 : 2) + 'px;background:#f3e9ff;border-radius:1px;left:' + ((i * 37) % 97) + '%;top:' + ((i * 53) % 61) + '%;animation:twinkle ' + (2 + (i % 4)) + 's ease-in-out ' + (i % 7) * 0.4 + 's infinite;';
@@ -311,7 +324,7 @@ var AfterlivesConsole = (function () {
     return screen;
   }
 
-  return { COLORS: COLORS, SHAPES: SHAPES, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
+  return { COLORS: COLORS, SHAPES: SHAPES, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = AfterlivesConsole;

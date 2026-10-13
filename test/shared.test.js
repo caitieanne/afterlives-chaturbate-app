@@ -63,4 +63,11 @@ assert.strictEqual(C.shapeOf('blob'), C.SHAPES.coffin, 'an unknown shape is the 
 assert.strictEqual(C.colorOf('Ghoul Gum').id, 'ghoul_gum');
 assert.strictEqual(C.colorOf('nope').id, 'coven', 'an unknown color is Coven');
 assert.strictEqual(C.COLORS.length, 10);
+assert.strictEqual(C.roomOf('dusk'), null, 'dusk is the drawn sky');
+assert.strictEqual(C.roomOf(undefined), null, 'the dusk sky by default');
+// every painted room has its art file, and the build bakes them all in
+const roomFiles = fs.readdirSync(path.join(__dirname, '..', 'art', 'rooms')).filter(f => f.endsWith('.webp'));
+assert.strictEqual(roomFiles.length, 17);
+const slot = fs.readFileSync(path.join(__dirname, '..', 'dist', '7-overlay-cryptid-js.js'), 'utf8');
+for (const f of roomFiles) assert.ok(slot.includes('  ' + f.replace('.webp', '') + ": 'data:image/webp;base64,"), f + ' is in the overlay');
 console.log('console.js: all checks passed');
