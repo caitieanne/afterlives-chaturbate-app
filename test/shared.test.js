@@ -44,3 +44,23 @@ assert.strictEqual(menuOf(mine).map(m => m.kind + ':' + m.tokens).join(','), 'wi
 assert.strictEqual(menuOf(defaults).length, 4);
 
 console.log('shared.js: all checks passed');
+
+// the console: every shape and color resolves, and every shape's path is whole numbers, not NaN
+const C = require('../src/overlay/console.js');
+for (const name of ['coffin', 'moon', 'heart', 'star', 'box', 'diamond', 'circle']) {
+  const shape = C.shapeOf(name);
+  assert.ok(shape, name);
+  const d = C.pathText(shape.path, 3, 10, 10);
+  assert.ok(!/NaN|undefined/.test(d), name + ' path is drawable');
+  assert.ok(shape.safe[0] < shape.safe[2] && shape.safe[1] < shape.safe[3], name + ' has room for the cryptid');
+  const L = C.layout(shape, 480, 360);
+  assert.ok(L.x >= 0 && L.y >= 0 && L.w <= 480 && L.h <= 360, name + ' fits the overlay');
+}
+assert.strictEqual(C.shapeOf('none'), null, 'no console');
+assert.strictEqual(C.shapeOf(undefined), C.SHAPES.coffin, 'the coffin by default');
+assert.strictEqual(C.shapeOf('Crescent Moon'), C.SHAPES.moon);
+assert.strictEqual(C.shapeOf('blob'), C.SHAPES.coffin, 'an unknown shape is the coffin');
+assert.strictEqual(C.colorOf('Ghoul Gum').id, 'ghoul_gum');
+assert.strictEqual(C.colorOf('nope').id, 'coven', 'an unknown color is Coven');
+assert.strictEqual(C.COLORS.length, 10);
+console.log('console.js: all checks passed');

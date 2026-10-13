@@ -16,6 +16,8 @@
   var settings = typeof $settings === 'object' && $settings ? $settings : {};
   var CHARACTER = ['lumi', 'boo', 'bigfoot'].indexOf(settings.character) >= 0 ? settings.character : 'lumi';
   var NAME = String(settings.pet_name || { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER]).slice(0, 16);
+  // the console it lives in (see console.js); effects go inside its screen. With console_shape "none" it stands on the stream by itself.
+  var fx = (typeof AfterlivesConsole === 'object' && AfterlivesConsole.mount(stage, settings, canvas, tagEl)) || stage;
 
   // ---- drawing helpers (everything is whole pixels on a 64 x 64 canvas) ----
   function rect(x, y, w, h, c) {
@@ -351,7 +353,7 @@
           el.textContent = emoji[i % emoji.length];
           el.style.left = 28 + Math.random() * 44 + '%';
           el.style.top = '48%';
-          stage.appendChild(el);
+          fx.appendChild(el);
           setTimeout(function () {
             el.remove();
           }, 2000);
@@ -367,7 +369,7 @@
       el.style.left = Math.random() * 100 + '%';
       el.style.background = colors[i % colors.length];
       el.style.animationDelay = Math.random() * 0.8 + 's';
-      stage.appendChild(el);
+      fx.appendChild(el);
       setTimeout(function (e) {
         e.remove();
       }, 3600, el);
