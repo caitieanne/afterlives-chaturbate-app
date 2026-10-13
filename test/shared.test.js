@@ -7,7 +7,7 @@ const assert = require('assert');
 const ctx = {};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'src', 'shared.js'), 'utf8'), ctx);
-const { pickReaction, commandReaction, menuOf } = ctx;
+const { pickReaction, commandReaction, menuOf, goalOf, goalStep, idleEverySeconds, noticeAllowed } = ctx;
 
 const defaults = {};
 const at = n => pickReaction(n, defaults);
@@ -42,6 +42,31 @@ assert.strictEqual(commandReaction('/kisses'), null);
 
 assert.strictEqual(menuOf(mine).map(m => m.kind + ':' + m.tokens).join(','), 'wink:2,kiss:10,party:100');
 assert.strictEqual(menuOf(defaults).length, 4);
+
+// the tip goal
+assert.strictEqual(goalOf({}), 0, 'no goal unless the broadcaster sets one');
+assert.strictEqual(goalOf({ tip_goal: 500 }), 500);
+assert.strictEqual(goalOf({ tip_goal: 'abc' }), 0);
+assert.deepStrictEqual({ ...goalStep(100, 50, 500, true) }, { progress: 150, reached: false });
+assert.deepStrictEqual({ ...goalStep(480, 50, 500, true) }, { progress: 30, reached: true }, 'reached, and the spill-over starts the next round');
+assert.deepStrictEqual({ ...goalStep(480, 50, 500, false) }, { progress: 500, reached: true }, 'reached once and stays full');
+assert.deepStrictEqual({ ...goalStep(500, 50, 500, false) }, { progress: 500, reached: false }, 'not celebrated twice');
+assert.deepStrictEqual({ ...goalStep(0, 500, 500, true) }, { progress: 0, reached: true }, 'an exact tip reaches it');
+assert.deepStrictEqual({ ...goalStep(10, 5, 0, true) }, { progress: 10, reached: false }, 'no goal, nothing happens');
+
+// how chatty it is
+assert.strictEqual(idleEverySeconds({}), 600, 'six times an hour by default');
+assert.strictEqual(idleEverySeconds({ speak_per_hour: 12 }), 300);
+assert.strictEqual(idleEverySeconds({ speak_per_hour: 0 }), 0, 'zero: only when someone plays');
+assert.strictEqual(idleEverySeconds({ speak_per_hour: 500 }), 60, 'never more than once a minute');
+const hour = 3600000;
+let n = noticeAllowed([], 0, {});
+assert.ok(n.ok);
+const ten = Array.from({ length: 10 }, (_, i) => i * 1000);
+assert.strictEqual(noticeAllowed(ten, 20000, {}).ok, false, 'ten an hour by default');
+assert.strictEqual(noticeAllowed(ten, hour + 5000, {}).ok, true, 'old ones age out after an hour');
+assert.strictEqual(noticeAllowed([], 0, { chat_notices_per_hour: 0 }).ok, false, 'zero: no chat notices');
+assert.strictEqual(noticeAllowed([1, 2], 3, { chat_notices_per_hour: 3 }).stamps.length, 3);
 
 console.log('shared.js: all checks passed');
 

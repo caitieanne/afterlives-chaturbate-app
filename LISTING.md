@@ -15,7 +15,9 @@ What it does:
 - A new fan club member gets a party.
 - With "greet newcomers" on, it waves at followers and people with tokens when they enter.
 - Anyone in chat can play with it for free with /wink, /kiss, /dance and /party (one per person every 10 seconds). You can switch this off.
-- Optional: show your tip menu on the overlay, and have the cryptid thank tippers in chat too.
+- Optional: show your tip menu on the overlay, and have the cryptid thank tippers in chat too (never more than a set number of chat notices an hour).
+- Optional: set a tip goal. A goal card shows the progress, and reaching it sets off a big celebration. It can start again once reached, and resets at the start of each show unless you choose to carry it over.
+- You choose how chatty it is: how many times an hour it says something on its own (hydrate reminders, posture checks, invitations to /dance), or never.
 
 Who can control it: only you, through the app settings. Chat can only use the four play commands above. The app collects no information and never asks
 anyone for anything but the tips they already choose to send.
