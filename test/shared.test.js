@@ -105,7 +105,7 @@ assert.strictEqual(C.shapeOf(undefined), C.SHAPES.coffin, 'the coffin by default
 assert.strictEqual(C.shapeOf('Crescent Moon'), C.SHAPES.moon);
 assert.strictEqual(C.shapeOf('blob'), C.SHAPES.coffin, 'an unknown shape is the coffin');
 assert.strictEqual(C.colorOf('Blue Raspberry').id, 'blue_raspberry');
-assert.strictEqual(C.colorOf('nope').id, 'grape', 'an unknown color is Grape');
+assert.strictEqual(C.colorOf('nope').id, 'violet', 'an unknown color is Violet');
 assert.strictEqual(C.COLORS.length, 10);
 assert.strictEqual(C.roomOf('dusk'), null, 'dusk is the drawn sky');
 assert.strictEqual(C.roomOf(undefined), null, 'the dusk sky by default');
