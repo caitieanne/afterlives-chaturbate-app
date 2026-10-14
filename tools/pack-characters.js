@@ -20,7 +20,12 @@ const manifest = JSON.parse(fs.readFileSync(path.join(DIR, 'characters.json'), '
         .sort((a, b) => parseInt(a) - parseInt(b));
       const parts = [];
       for (let i = 0; i < frames.length; i++) {
-        const meta = await sharp(path.join(dir, frames[i])).metadata();
+        // a download that failed (PixelLab "too busy", say) leaves an error message where a frame should be: say which one
+        const meta = await sharp(path.join(dir, frames[i]))
+          .metadata()
+          .catch(() => {
+            throw new Error(path.join(dir, frames[i]) + ' is not an image: download it again');
+          });
         parts.push({ input: path.join(dir, frames[i]), left: i * CELL + Math.round((CELL - meta.width) / 2), top: Math.round((CELL - meta.height) / 2) });
       }
       const out = path.join(DIR, name, anim + '.webp');

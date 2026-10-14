@@ -8,16 +8,16 @@
 var AfterlivesConsole = (function () {
   // ---- colors (names and plastic tones from the game's console colors) ----
   var COLORS = [
-    { id: 'cauldron', hex: '#2b2b36', dark: true },
-    { id: 'nessie', hex: '#18b2c6' },
-    { id: 'gloomberry', hex: '#3f64e0' },
-    { id: 'coven', hex: '#8a47d6' },
-    { id: 'ghoul_gum', hex: '#ff6fb5' },
-    { id: 'vampire', hex: '#e93d58' },
-    { id: 'pumpkin', hex: '#ff8a1f' },
-    { id: 'slime', hex: '#7fd02e' },
-    { id: 'tombstone', hex: '#6d7280' },
-    { id: 'ghost', hex: '#bfe4ff' },
+    { id: 'cauldron', name: 'Cauldron', hex: '#2b2b36', dark: true },
+    { id: 'nessie', name: 'Nessie', hex: '#18b2c6' },
+    { id: 'gloomberry', name: 'Gloomberry', hex: '#3f64e0' },
+    { id: 'coven', name: 'Coven', hex: '#8a47d6' },
+    { id: 'ghoul_gum', name: 'Ghoul Gum', hex: '#ff6fb5' },
+    { id: 'vampire', name: 'Vampire', hex: '#e93d58' },
+    { id: 'pumpkin', name: 'Pumpkin', hex: '#ff8a1f' },
+    { id: 'slime', name: 'Slime', hex: '#7fd02e' },
+    { id: 'tombstone', name: 'Tombstone', hex: '#6d7280' },
+    { id: 'ghost', name: 'Ghost', hex: '#bfe4ff' },
   ];
 
   function hexToHsl(hex) {
@@ -59,10 +59,11 @@ var AfterlivesConsole = (function () {
     return [Math.round(a[0] * t + b[0] * (1 - t)), Math.round(a[1] * t + b[1] * (1 - t)), Math.round(a[2] * t + b[2] * (1 - t))];
   }
 
-  /** A color by its name ("coven", "ghoul gum", "Ghoul_Gum" all work), or Coven. */
+  /** A color by its name ("coven", "ghoul gum", "Ghoul_Gum" all work) or its hex code (what the settings page's color picker gives), or Coven. */
   function colorOf(name) {
-    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
-    for (var i = 0; i < COLORS.length; i++) if (COLORS[i].id === key) return COLORS[i];
+    var raw = String(name || '').toLowerCase();
+    var key = raw.replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
+    for (var i = 0; i < COLORS.length; i++) if (COLORS[i].id === key || COLORS[i].hex === raw) return COLORS[i];
     return COLORS[3];
   }
 
@@ -164,14 +165,56 @@ var AfterlivesConsole = (function () {
   /** The painted room for a name, as an image address, or null for the dusk sky (the default, and anything not known). */
   function roomOf(name) {
     var rooms = typeof AFTERLIVES_ROOMS === 'object' && AFTERLIVES_ROOMS ? AFTERLIVES_ROOMS : {};
-    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '');
+    var key = roomKeyOf(name);
     return Object.prototype.hasOwnProperty.call(rooms, key) ? rooms[key] : null;
   }
+
+  /** The rooms as the settings page lists them: [id, name]. */
+  var ROOM_LABELS = [
+    ['dusk', 'Dusk sky'],
+    ['dreamy', 'Dreamy bedroom'],
+    ['goth', 'Goth parlor'],
+    ['vaporwave', 'Vaporwave den'],
+    ['neon', 'Neon den'],
+    ['starship', 'Starship cabin'],
+    ['cyber', 'Cyber pad'],
+    ['boutique', 'Boutique'],
+    ['music', 'Music studio'],
+    ['studio', 'Art studio'],
+    ['slime', 'Slime bedroom'],
+    ['academia', 'Dark academia'],
+    ['library', 'Library nook'],
+    ['cottage', 'Cottage'],
+    ['zen', 'Zen spa'],
+    ['rooftop', 'Rooftop'],
+    ['campfire', 'Campfire'],
+    ['gym', 'Home gym'],
+  ];
+  /** A room's id from its id or its name on the settings page ("Dreamy bedroom" gives "dreamy"); "dusk" for anything else. */
+  function roomKeyOf(name) {
+    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '');
+    for (var i = 0; i < ROOM_LABELS.length; i++) {
+      if (ROOM_LABELS[i][0] === key || ROOM_LABELS[i][1].toLowerCase().replace(/[^a-z]+/g, '') === key) return ROOM_LABELS[i][0];
+    }
+    return 'dusk';
+  }
+  /** The console shapes as the settings page lists them: [id, name]. */
+  var SHAPE_LABELS = [
+    ['coffin', 'Coffin'],
+    ['heart', 'Heart'],
+    ['moon', 'Crescent moon'],
+    ['star', 'Star'],
+    ['diamond', 'Diamond'],
+    ['harlequin', 'Harlequin'],
+    ['circle', 'Circle'],
+    ['box', 'Box'],
+    ['none', 'No console'],
+  ];
 
   /** A shape by its name, or null for "none" (the cryptid on its own, no console). Unknown names give the coffin. */
   function shapeOf(name) {
     var key = String(name === undefined || name === null || name === '' ? 'coffin' : name).toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
-    if (key === 'none' || key === 'off') return null;
+    if (key === 'none' || key === 'off' || key === 'no_console') return null;
     return SHAPES[SHAPE_NAMES[key] || key] || SHAPES.coffin;
   }
 
@@ -203,7 +246,7 @@ var AfterlivesConsole = (function () {
   }
 
   /** How big the shape is drawn on a page of `w` by `h`: the screen's box on the page, and the scale. */
-  var BAND = 9; // plastic all round the screen, in the shape's units
+  var BAND = 6; // plastic all round the screen, in the shape's units (thin, to show off more of the room)
   var RIM = 2;
   var BEZEL = 2.6;
   function layout(shape, w, h) {
@@ -325,7 +368,7 @@ var AfterlivesConsole = (function () {
     return screen;
   }
 
-  return { COLORS: COLORS, SHAPES: SHAPES, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
+  return { COLORS: COLORS, SHAPES: SHAPES, ROOM_LABELS: ROOM_LABELS, SHAPE_LABELS: SHAPE_LABELS, roomKeyOf: roomKeyOf, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = AfterlivesConsole;

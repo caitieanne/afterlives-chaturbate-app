@@ -38,10 +38,12 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
    | `7-overlay-cryptid-js.js` | Broadcast Overlay `cryptid`: JS |
    | `8-overlay-shared-code.js` | Broadcast Overlay `cryptid`: Shared code |
 
-4. Add the **settings** below (click the "+" beside `$settings`; the names must match exactly, and a setting's type cannot be changed once made).
+4. Add the **settings** in one go: open the IDE's **Advanced Settings** and paste `0-advanced-settings.json`. That makes the whole settings page,
+   in Chaturbate's own style, with sections (Your character, Look, Tip menu, Tip goal, Chat), dropdowns, a color picker and plain descriptions.
+   (The table below lists the same settings, for reference or for creating them by hand with the "+" beside `$settings`.)
 5. Test on the Testbed, then **Release**.
 
-### Settings to create
+### The settings (all in `0-advanced-settings.json`)
 
 | Name | Type | Default | What it does |
 | --- | --- | --- | --- |

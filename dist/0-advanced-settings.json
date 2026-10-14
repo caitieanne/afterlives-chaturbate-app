@@ -1,0 +1,258 @@
+{
+  "section_character": {
+    "type": "fieldset",
+    "title": "Your character",
+    "collapsible": true,
+    "collapsed": false,
+    "settings": {
+      "character": {
+        "type": "string",
+        "title": "Character",
+        "description": "Who lives in your overlay.",
+        "enum": [
+          "Peachy",
+          "The Cherries",
+          "Eggy",
+          "Bananzo"
+        ],
+        "default": "Peachy"
+      },
+      "pet_name": {
+        "type": "string",
+        "title": "Name on stream",
+        "description": "Leave empty to use the character's own name.",
+        "maxLength": 16
+      }
+    }
+  },
+  "section_look": {
+    "type": "fieldset",
+    "title": "Look",
+    "collapsible": true,
+    "collapsed": false,
+    "settings": {
+      "room": {
+        "type": "string",
+        "title": "Room",
+        "description": "Where your character lives: the starry dusk sky or one of the rooms.",
+        "enum": [
+          "Dusk sky",
+          "Dreamy bedroom",
+          "Goth parlor",
+          "Vaporwave den",
+          "Neon den",
+          "Starship cabin",
+          "Cyber pad",
+          "Boutique",
+          "Music studio",
+          "Art studio",
+          "Slime bedroom",
+          "Dark academia",
+          "Library nook",
+          "Cottage",
+          "Zen spa",
+          "Rooftop",
+          "Campfire",
+          "Home gym"
+        ],
+        "default": "Dusk sky"
+      },
+      "console_shape": {
+        "type": "string",
+        "title": "Console shape",
+        "description": "The handheld your character lives in, or none.",
+        "enum": [
+          "Coffin",
+          "Heart",
+          "Crescent moon",
+          "Star",
+          "Diamond",
+          "Harlequin",
+          "Circle",
+          "Box",
+          "No console"
+        ],
+        "default": "Coffin"
+      },
+      "console_color": {
+        "type": "color",
+        "title": "Console color",
+        "description": "The see-through plastic.",
+        "enum": [
+          {
+            "#2b2b36": "Cauldron"
+          },
+          {
+            "#18b2c6": "Nessie"
+          },
+          {
+            "#3f64e0": "Gloomberry"
+          },
+          {
+            "#8a47d6": "Coven"
+          },
+          {
+            "#ff6fb5": "Ghoul Gum"
+          },
+          {
+            "#e93d58": "Vampire"
+          },
+          {
+            "#ff8a1f": "Pumpkin"
+          },
+          {
+            "#7fd02e": "Slime"
+          },
+          {
+            "#6d7280": "Tombstone"
+          },
+          {
+            "#bfe4ff": "Ghost"
+          }
+        ],
+        "default": "#8a47d6"
+      }
+    }
+  },
+  "section_tips": {
+    "type": "fieldset",
+    "title": "Tip menu",
+    "collapsible": true,
+    "collapsed": false,
+    "settings": {
+      "tip_wink": {
+        "type": "number",
+        "title": "Wink",
+        "description": "Tokens for a wink. A tip below everything still gets a wink. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 1
+      },
+      "tip_kiss": {
+        "type": "number",
+        "title": "Kiss",
+        "description": "Tokens for a blown kiss. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 5
+      },
+      "tip_dance": {
+        "type": "number",
+        "title": "Dance",
+        "description": "Tokens for a dance. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 15
+      },
+      "tip_smooch": {
+        "type": "number",
+        "title": "Smooch",
+        "description": "Tokens for a smooch: they walk right up and kiss the screen. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 25
+      },
+      "tip_twerk": {
+        "type": "number",
+        "title": "Twerk",
+        "description": "Tokens for a twerk. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 35
+      },
+      "tip_party": {
+        "type": "number",
+        "title": "Party",
+        "description": "Tokens for a party with confetti. A new fan club member always gets one. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 50
+      },
+      "show_menu": {
+        "type": "boolean",
+        "title": "Show the tip menu on the overlay",
+        "default": false
+      }
+    }
+  },
+  "section_goal": {
+    "type": "fieldset",
+    "title": "Tip goal",
+    "collapsible": true,
+    "collapsed": true,
+    "settings": {
+      "tip_goal": {
+        "type": "number",
+        "title": "Goal (tokens)",
+        "description": "Tips count toward it, and reaching it sets off a big celebration. 0: no goal.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 0
+      },
+      "tip_goal_name": {
+        "type": "string",
+        "title": "What the goal is for",
+        "description": "Shown on the goal card.",
+        "maxLength": 30,
+        "default": "Tip goal"
+      },
+      "show_goal": {
+        "type": "boolean",
+        "title": "Show the goal card on the overlay",
+        "default": true
+      },
+      "goal_repeats": {
+        "type": "boolean",
+        "title": "Start the goal again once it is reached",
+        "default": true
+      },
+      "goal_reset_each_show": {
+        "type": "boolean",
+        "title": "Start the goal from zero each show",
+        "description": "Off: progress carries over to your next show.",
+        "default": true
+      }
+    }
+  },
+  "section_chat": {
+    "type": "fieldset",
+    "title": "Chat",
+    "collapsible": true,
+    "collapsed": true,
+    "settings": {
+      "chat_commands": {
+        "type": "boolean",
+        "title": "Free chat commands",
+        "description": "Anyone can use /wink /kiss /dance /party (one each per person every 10 seconds).",
+        "default": true
+      },
+      "greet": {
+        "type": "boolean",
+        "title": "Wave at newcomers",
+        "description": "Followers and people with tokens get a wave when they come in.",
+        "default": true
+      },
+      "thank_in_chat": {
+        "type": "boolean",
+        "title": "Thank tippers in chat",
+        "default": false
+      },
+      "speak_per_hour": {
+        "type": "number",
+        "title": "Things it says on its own, per hour",
+        "description": "Little lines like \"Hydrate, chat!\". 0: only when someone plays.",
+        "minimum": 0,
+        "maximum": 60,
+        "default": 6
+      },
+      "chat_notices_per_hour": {
+        "type": "number",
+        "title": "Most chat notices per hour",
+        "description": "The app never posts more than this many chat notices an hour. 0: none.",
+        "minimum": 0,
+        "maximum": 60,
+        "default": 10
+      }
+    }
+  }
+}

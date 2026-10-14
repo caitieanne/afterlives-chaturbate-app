@@ -44,8 +44,42 @@ var AfterlivesLife = (function () {
     rug: { anim: 'dance', min: 5, max: 8 },
     window: { anim: 'idle', min: 4, max: 7 },
   };
+  /** Sitting lifts them off the floor by this much of their own height: up onto the chair's seat at the desk (so their hands reach the
+   * keyboard), and up onto the mattress or cushions at the bed or couch. */
+  var LIFT = { desk: 0.22, lounge: 0.2 };
+
   /** Reactions: which animation each reaction plays, and how many times through. */
-  var REACT = { wink: ['wink', 1], kiss: ['kiss', 1], dance: ['dance', 2], party: ['party', 2], hello: ['wave', 1], goal: ['party', 3], buzz: ['buzz', 2] };
+  var REACT = { wink: ['wink', 1], kiss: ['kiss', 1], dance: ['dance', 2], smooch: ['smooch', 1], twerk: ['twerk', 2], party: ['party', 2], hello: ['wave', 1], goal: ['party', 3], buzz: ['buzz', 2] };
+
+  /** The smooch: they come right up to the camera (this long, in seconds), grow this many times bigger, kiss the screen, then go back. */
+  var SMOOCH = { travel: 0.7, zoom: 2.6, frontY: 1.18 };
+
+  /** A lipstick kiss print on the screen's glass, which fades away after a few seconds. Drawn here, no image needed. */
+  function kissMark(screen) {
+    var m = document.createElement('div');
+    var w = Math.max(40, (screen.clientWidth || 200) * 0.34);
+    m.style.cssText = 'position:absolute;left:50%;top:44%;width:' + w + 'px;height:' + w * 0.62 + 'px;margin-left:' + -w / 2 + 'px;margin-top:' + -w * 0.31 + 'px;pointer-events:none;z-index:500;';
+    m.innerHTML =
+      '<svg viewBox="0 0 100 62" width="100%" height="100%" style="transform:rotate(' + (Math.random() * 24 - 12).toFixed(0) + 'deg)">' +
+      '<path d="M4,30 Q18,4 38,16 Q50,9 62,16 Q82,4 96,30 Q72,33 50,31 Q28,33 4,30Z" fill="#ff3f86" opacity="0.88"/>' +
+      '<path d="M4,31 Q28,37 50,35 Q72,37 96,31 Q76,60 50,58 Q24,60 4,31Z" fill="#e8326f" opacity="0.88"/>' +
+      '<path d="M14,31 Q50,36 86,31" stroke="#a81d4d" stroke-width="2" fill="none" opacity="0.6"/>' +
+      '<path d="M22,44 Q50,52 70,46" stroke="#ff9cc2" stroke-width="3" fill="none" opacity="0.7"/>' +
+      '</svg>';
+    screen.appendChild(m);
+    var anim = m.animate(
+      [
+        { opacity: 0, transform: 'scale(1.4)' },
+        { opacity: 1, transform: 'scale(1)', offset: 0.06 },
+        { opacity: 1, transform: 'scale(1)', offset: 0.7 },
+        { opacity: 0, transform: 'scale(1)' },
+      ],
+      { duration: 5000, easing: 'ease-out' }
+    );
+    anim.onfinish = function () {
+      m.remove();
+    };
+  }
 
   /** Picks the next spot to go to: anywhere the room has, but not where they already are. */
   function nextSpot(r, current, rnd) {
@@ -101,7 +135,7 @@ var AfterlivesLife = (function () {
       var a = chr.anims[animName] || chr.anims.idle;
       var started = s.react ? s.react.t0 : s.t0;
       var f = Math.floor(((now - started) / 1000) * (a.fps || 8));
-      if (s.react) {
+      if (s.react && !s.react.smooch) {
         if (f >= a.n * s.react.times) {
           // done: carry on walking if they were on the way somewhere, else back to what the spot is for
           s.react = null;
@@ -132,28 +166,64 @@ var AfterlivesLife = (function () {
         goTo(nextSpot(r, s.spot));
       }
 
+      // the smooch: come in to the front, kiss, go back
+      var px = s.x;
+      var py = s.y;
+      var zoom = 1;
+      if (s.react && s.react.smooch) {
+        var sm = s.react.smooch;
+        var e = (now - s.react.t0) / 1000;
+        var kissLen = a.n / (a.fps || 8);
+        var k = 0;
+        if (e < SMOOCH.travel) k = e / SMOOCH.travel;
+        else if (e < SMOOCH.travel + kissLen) k = 1;
+        else k = Math.max(0, 1 - (e - SMOOCH.travel - kissLen) / SMOOCH.travel);
+        k = k * k * (3 - 2 * k); // ease in and out
+        px = sm.x + (0.5 - sm.x) * k;
+        py = sm.y + (SMOOCH.frontY - sm.y) * k;
+        zoom = 1 + (SMOOCH.zoom - 1) * k;
+        f = e < SMOOCH.travel ? 0 : e < SMOOCH.travel + kissLen ? Math.min(a.n - 1, Math.floor((e - SMOOCH.travel) * (a.fps || 8))) : a.n - 1;
+        if (!sm.marked && e >= SMOOCH.travel + kissLen * 0.45) {
+          sm.marked = true;
+          kissMark(screen);
+        }
+        if (e >= SMOOCH.travel * 2 + kissLen) {
+          s.react = null;
+          if (s.walk) play('walk', s.walk.x < s.x);
+          else settle();
+          requestAnimationFrame(draw);
+          return;
+        }
+      }
+
       var box = pictureBox();
       // frames are 124 px squares with the character about 85 px tall in them
-      var size = box.h * 0.4 * depthScale(r, s.y);
+      var size = box.h * 0.4 * depthScale(r, Math.min(py, r.front)) * zoom;
       el.style.width = size + 'px';
       el.style.height = size + 'px';
       el.style.backgroundImage = 'url(' + a.src + ')';
       el.style.backgroundSize = a.n * 100 + '% 100%';
       el.style.backgroundPosition = (a.n > 1 ? (f / (a.n - 1)) * 100 : 0) + '% 0';
       var flip = s.react ? false : s.flip;
+      var lift = !s.react && !s.walk && LIFT[s.spot] && animName === DO[s.spot].anim ? size * LIFT[s.spot] : 0;
       // feet sit 104 px down each 124 px frame
-      el.style.transform = 'translate(' + (box.x + s.x * box.w - size / 2) + 'px,' + (box.y + s.y * box.h - size * 0.84) + 'px)' + (flip ? ' scaleX(-1)' : '');
-      el.style.zIndex = String(Math.round(s.y * 100));
+      el.style.transform = 'translate(' + (box.x + px * box.w - size / 2) + 'px,' + (box.y + py * box.h - size * 0.84 - lift) + 'px)' + (flip ? ' scaleX(-1)' : '');
+      el.style.zIndex = String(Math.round(py * 100));
       requestAnimationFrame(draw);
     }
     requestAnimationFrame(draw);
 
     return {
+      /** Sends them straight to a spot (for the preview). */
+      go: function (name) {
+        s.react = null;
+        goTo(name);
+      },
       /** A tip, a goal or a chat command: turn to the camera and react, then carry on. */
       react: function (kind) {
         var rr = REACT[kind] || REACT.wink;
         var anim = chr.anims[rr[0]] ? rr[0] : 'idle';
-        s.react = { anim: anim, t0: performance.now(), times: rr[1] };
+        s.react = { anim: anim, t0: performance.now(), times: rr[1], smooch: kind === 'smooch' && chr.anims.smooch ? { x: s.x, y: s.y } : null };
       },
     };
   }

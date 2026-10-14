@@ -1,11 +1,33 @@
 // SHARED CODE (the app's "Shared code" slot). It runs before every event handler, so the handlers can call these. Plain functions only: anything
 // that has to survive between events lives in $kv, never in a variable here.
 
+// The settings page groups settings into sections (fieldsets, see dist/0-advanced-settings.json). In case Chaturbate hands them back nested
+// under their section rather than flat, lift them out, so $settings.room works either way.
+function flattenSettings(s) {
+  var out = {};
+  for (var k in s) {
+    var v = s[k];
+    if (v && typeof v === 'object' && !Array.isArray(v)) for (var k2 in v) out[k2] = v[k2];
+    else out[k] = v;
+  }
+  return out;
+}
+if (typeof $settings === 'object' && $settings) {
+  try {
+    var flatSettings = flattenSettings($settings);
+    for (var fk in flatSettings) $settings[fk] = flatSettings[fk];
+  } catch (e) {
+    // read-only: the handlers read flat settings already
+  }
+}
+
 // The reactions a tip can set off, cheapest first. Each has a setting (tokens it needs; 0 or empty turns it off).
 var REACTIONS = [
   { kind: 'wink', setting: 'tip_wink', fallback: 1 },
   { kind: 'kiss', setting: 'tip_kiss', fallback: 5 },
   { kind: 'dance', setting: 'tip_dance', fallback: 15 },
+  { kind: 'smooch', setting: 'tip_smooch', fallback: 25 }, // walks right up to the camera and kisses the screen
+  { kind: 'twerk', setting: 'tip_twerk', fallback: 35 },
   { kind: 'party', setting: 'tip_party', fallback: 50 },
 ];
 

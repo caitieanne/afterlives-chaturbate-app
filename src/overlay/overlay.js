@@ -13,11 +13,14 @@
   var tagEl = document.getElementById('tag');
 
   // ---- settings (read only here) ----
-  var settings = typeof $settings === 'object' && $settings ? $settings : {};
+  var settings = typeof $settings === 'object' && $settings ? (typeof flattenSettings === 'function' ? flattenSettings($settings) : $settings) : {};
   var CHARS = typeof AFTERLIVES_CHARS === 'object' && AFTERLIVES_CHARS ? AFTERLIVES_CHARS : {};
-  var picked = String(settings.character || '').toLowerCase().replace(/[^a-z]/g, '');
-  // a sprite character when one is picked (or by default, the first one), else one of the drawn placeholders
-  var SPRITE = CHARS[picked] || (!picked && CHARS[Object.keys(CHARS)[0]]) || null;
+  // "The Cherries" on the settings page is "cherries" here
+  var picked = String(settings.character || '').toLowerCase().replace(/[^a-z]/g, '').replace(/^the/, '');
+  var DRAWN = ['lumi', 'boo', 'bigfoot'];
+  // a sprite character when one is picked (or any other name: the first one), else one of the drawn placeholders
+  var SPRITE = CHARS[picked] || (DRAWN.indexOf(picked) < 0 && CHARS[Object.keys(CHARS)[0]]) || null;
+  if (SPRITE && !CHARS[picked]) picked = Object.keys(CHARS)[0];
   var CHARACTER = SPRITE ? picked || Object.keys(CHARS)[0] : ['lumi', 'boo', 'bigfoot'].indexOf(picked) >= 0 ? picked : 'lumi';
   var NAME = String(settings.pet_name || (SPRITE ? SPRITE.name : { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER])).slice(0, 16);
   // the console it lives in (see console.js); effects go inside its screen. With console_shape "none" it stands on the stream by itself.
@@ -26,9 +29,10 @@
   var life = null;
   if (SPRITE && typeof AfterlivesLife === 'object') {
     canvas.style.display = 'none';
-    var roomKey = String(settings.room || 'dusk').toLowerCase().replace(/[^a-z]/g, '');
+    var roomKey = AfterlivesConsole.roomKeyOf(settings.room);
     var roomArt = fx !== stage && typeof AfterlivesConsole === 'object' ? AfterlivesConsole.roomOf(settings.room) : null;
     life = AfterlivesLife.mount(fx, SPRITE, roomArt ? roomKey : 'dusk', roomArt);
+    window.afterlivesPet = life; // lets the preview page send them to a spot
   }
 
   // ---- drawing helpers (everything is whole pixels on a 64 x 64 canvas) ----
@@ -98,7 +102,7 @@
 
   // ---- what the cryptid is doing right now ----
   var react = null; // { kind, t0 }
-  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0 };
+  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0, smooch: 3.0, twerk: 3.6 };
   var hearts = []; // the hearts a kiss sends flying: { x, y, vx, vy, t0 }
 
   function pose(t) {
@@ -116,11 +120,11 @@
           s.winkR = r > 0.15 && r < 1.0;
           s.flare = Math.max(0, 1 - r) * 0.6;
           s.mouth = 'open';
-        } else if (k === 'kiss') {
+        } else if (k === 'kiss' || k === 'smooch') {
           s.kissing = r > 0.25 && r < 1.1;
           s.mouth = s.kissing ? 'kiss' : 'smile';
           s.flare = 0.5;
-        } else if (k === 'dance') {
+        } else if (k === 'dance' || k === 'twerk') {
           s.jump = -Math.abs(Math.sin(r * 7)) * 5;
           s.sway = Math.sin(r * 7) * 3;
           s.mouth = 'open';
@@ -397,6 +401,8 @@
     dance: ['{u} made me dance!', 'Dancing for {u}!', 'Wheee! Thank you, {u}!'],
     party: ['{u} threw a PARTY!!', 'PARTY for {u}!', '{u}!!! Confetti!'],
     hello: ['Hi {u}! Welcome in.', 'Welcome, {u}!', '{u} is here! Hi!'],
+    smooch: ['MWAH! A big one for {u}!', '{u} gets a smooch on the screen!', 'Come here, {u}... mwah!'],
+    twerk: ['{u} made me twerk!', 'Twerking for {u}!', 'Look at it go, {u}!'],
     goal: ['GOAL! {g}! Thank you, {u}!', 'We did it: {g}! {u}, you star!', '{g}: DONE! Thank you all!'],
   };
   // what it says on its own, now and then (how often is the broadcaster's "speak_per_hour"); never anything about money
@@ -417,7 +423,7 @@
     var list = LINES[kind] || LINES.wink;
     return list[Math.floor(Math.random() * list.length)].replace('{u}', user || 'someone').replace('{g}', goalName);
   }
-  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
+  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], smooch: ['💋', '💋', '💜', '💋'], twerk: ['🍑', '✨', '🍑', '🎶'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
 
   // ---- events from the app ----
   $overlay.on(
@@ -451,7 +457,7 @@
   tagEl.appendChild(sp);
   if (settings.show_menu === true && typeof menuOf === 'function') {
     var items = menuOf(settings);
-    var LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', party: 'Party!' };
+    var LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party!' };
     menuEl.style.display = 'block';
     menuEl.innerHTML = '<h4>TIP MENU</h4>' + items.map(function (m) {
       return '<div><span>' + LABEL[m.kind] + '</span><b>' + m.tokens + '+</b></div>';

@@ -16,20 +16,24 @@ assert.strictEqual(at(4), 'wink');
 assert.strictEqual(at(5), 'kiss');
 assert.strictEqual(at(14), 'kiss');
 assert.strictEqual(at(15), 'dance');
-assert.strictEqual(at(49), 'dance');
+assert.strictEqual(at(24), 'dance');
+assert.strictEqual(at(25), 'smooch');
+assert.strictEqual(at(34), 'smooch');
+assert.strictEqual(at(35), 'twerk');
+assert.strictEqual(at(49), 'twerk');
 assert.strictEqual(at(50), 'party');
 assert.strictEqual(at(5000), 'party');
 assert.strictEqual(at(0), 'wink', 'a tiny tip is still answered');
 
 // the broadcaster's own amounts
-const mine = { tip_wink: 2, tip_kiss: 10, tip_dance: 0, tip_party: 100 };
+const mine = { tip_wink: 2, tip_kiss: 10, tip_dance: 0, tip_smooch: 0, tip_twerk: 0, tip_party: 100 };
 assert.strictEqual(pickReaction(1, mine), 'wink', 'below everything still winks');
 assert.strictEqual(pickReaction(10, mine), 'kiss');
 assert.strictEqual(pickReaction(99, mine), 'kiss', 'dance is off, so 99 stays a kiss');
 assert.strictEqual(pickReaction(100, mine), 'party');
 
 // a cleared setting is off; a setting that never existed is the default
-assert.strictEqual(pickReaction(50, { tip_party: null }), 'dance');
+assert.strictEqual(pickReaction(50, { tip_party: null }), 'twerk');
 assert.strictEqual(pickReaction(5, { tip_wink: null, tip_kiss: undefined }), 'kiss');
 // two with the same amount: the later (pricier tier) wins
 assert.strictEqual(pickReaction(10, { tip_kiss: 10, tip_dance: 10 }), 'dance');
@@ -41,7 +45,7 @@ assert.strictEqual(commandReaction('hello /kiss'), null);
 assert.strictEqual(commandReaction('/kisses'), null);
 
 assert.strictEqual(menuOf(mine).map(m => m.kind + ':' + m.tokens).join(','), 'wink:2,kiss:10,party:100');
-assert.strictEqual(menuOf(defaults).length, 4);
+assert.strictEqual(menuOf(defaults).length, 6);
 
 // the tip goal
 assert.strictEqual(goalOf({}), 0, 'no goal unless the broadcaster sets one');
@@ -109,3 +113,14 @@ assert.ok(L.depthScale(L.ROOMS.cyber, 0.58) < L.depthScale(L.ROOMS.cyber, 0.9), 
 for (let i = 0; i < 20; i++) assert.notStrictEqual(L.nextSpot(L.ROOMS.cyber, 'desk'), 'desk', 'never the same spot again');
 assert.strictEqual(L.nextSpot(L.ROOMS.gym, 'rug'), 'window', 'a bare room still has somewhere to go');
 console.log('life.js: all checks passed');
+
+// the settings page: every choice on it means something to the code
+const page = require('../tools/settings.js')();
+for (const label of page.section_look.settings.room.enum) {
+  const id = C.roomKeyOf(label);
+  assert.ok(id === 'dusk' ? label === 'Dusk sky' : !!L.ROOMS[id], label + ' is a room');
+}
+for (const label of page.section_look.settings.console_shape.enum) assert.ok(label === 'No console' ? C.shapeOf(label) === null : !!C.shapeOf(label), label + ' is a shape');
+for (const c of page.section_look.settings.console_color.enum) assert.strictEqual(C.colorOf(Object.keys(c)[0]).name, Object.values(c)[0]);
+assert.strictEqual(C.shapeOf('Crescent moon'), C.SHAPES.moon);
+console.log('settings page: all checks passed');

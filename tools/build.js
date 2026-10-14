@@ -42,6 +42,9 @@ const chars =
 // the overlay's JS slot is the rooms, the characters, the console (its shapes and colors), their life in the room, then the overlay itself
 const js = rooms + chars + read('overlay/console.js') + '\n' + read('overlay/life.js') + '\n' + read('overlay/overlay.js');
 
+// the settings page: paste into the IDE's Advanced Settings (one paste instead of creating every setting by hand)
+write('0-advanced-settings.json', JSON.stringify(require('./settings.js')(), null, 2) + '\n');
+
 // the slots, named as the IDE names them
 write('1-app-shared-code.js', shared);
 write('2-handler-tip-received.js', read('handlers/tip-received.js'));
@@ -137,4 +140,4 @@ pick('rooms', 'room', ['dusk'].concat(Object.keys(typeof AFTERLIVES_ROOMS === 'o
 </body></html>
 `;
 write('preview.html', preview);
-console.log('built dist/: 9 slot files and preview.html (' + roomNames.length + ' rooms, overlay JS ' + Math.round(js.length / 1024) + ' KB)');
+console.log('built dist/: advanced settings, 9 slot files and preview.html (' + roomNames.length + ' rooms, overlay JS ' + Math.round(js.length / 1024) + ' KB)');
