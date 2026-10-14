@@ -54,7 +54,7 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
 | `pet_name` | text | (the character's name) | Shown on the name tag and in chat lines |
 | `console_shape` | choice or text: `coffin`, `moon`, `heart`, `star`, `box`, `diamond`, `harlequin`, `circle`, `none` | `coffin` | The handheld console the cryptid lives in (`none`: it stands on the stream by itself) |
 | `room` | choice or text: `dusk`, `zen`, `cyber`, `campfire`, `academia`, `boutique`, `vaporwave`, `starship`, `studio`, `slime`, `cottage`, `neon`, `goth`, `music`, `rooftop`, `gym`, `library`, `dreamy` | `dusk` | What the console's screen shows: the drawn dusk sky, or one of the painted rooms |
-| `console_color` | choice or text: `cauldron`, `nessie`, `gloomberry`, `coven`, `ghoul_gum`, `vampire`, `pumpkin`, `slime`, `tombstone`, `ghost` | `coven` | The console's see-through plastic (the Afterlives game's console colors) |
+| `console_color` | color picker (hex), or a name: `midnight`, `blue_raspberry`, `blueberry`, `grape`, `bubblegum`, `cherry`, `tangerine`, `lime`, `smoke`, `frost` | Grape (`#8a47d6`) | The console's see-through plastic |
 | `tip_wink` | number | 1 | Tokens for a wink (empty or 0 = off) |
 | `tip_kiss` | number | 5 | Tokens for a kiss |
 | `tip_dance` | number | 15 | Tokens for a dance |

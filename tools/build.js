@@ -100,7 +100,7 @@ const preview = `<!doctype html>
 <div class="row" id="shapes"></div>
 <div class="row" id="colors"></div>
 <div class="row" id="rooms"></div>
-<small>The checks show it is see-through. Settings in the address: ?character=boo&amp;console_shape=heart&amp;console_color=ghoul_gum&amp;show_menu=1</small>
+<small>The checks show it is see-through. Settings in the address: ?character=boo&amp;console_shape=heart&amp;console_color=bubblegum&amp;show_menu=1</small>
 </div></div>
 <script>
 // a pretend Chaturbate: $settings from the address, and an $overlay that hands events straight to the overlay's handlers

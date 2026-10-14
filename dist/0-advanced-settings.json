@@ -92,34 +92,34 @@
         "description": "The see-through plastic.",
         "enum": [
           {
-            "#2b2b36": "Cauldron"
+            "#2b2b36": "Midnight"
           },
           {
-            "#18b2c6": "Nessie"
+            "#18b2c6": "Blue Raspberry"
           },
           {
-            "#3f64e0": "Gloomberry"
+            "#3f64e0": "Blueberry"
           },
           {
-            "#8a47d6": "Coven"
+            "#8a47d6": "Grape"
           },
           {
-            "#ff6fb5": "Ghoul Gum"
+            "#ff6fb5": "Bubblegum"
           },
           {
-            "#e93d58": "Vampire"
+            "#e93d58": "Cherry"
           },
           {
-            "#ff8a1f": "Pumpkin"
+            "#ff8a1f": "Tangerine"
           },
           {
-            "#7fd02e": "Slime"
+            "#7fd02e": "Lime"
           },
           {
-            "#6d7280": "Tombstone"
+            "#6d7280": "Smoke"
           },
           {
-            "#bfe4ff": "Ghost"
+            "#bfe4ff": "Frost"
           }
         ],
         "default": "#8a47d6"
