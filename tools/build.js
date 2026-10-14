@@ -41,7 +41,9 @@ const chars =
   JSON.stringify(charsOut) +
   ';\n';
 // the overlay's JS slot is the rooms, the characters, the console (its shapes and colors), their life in the room, then the overlay itself
-const js = rooms + chars + read('overlay/console.js') + '\n' + read('overlay/life.js') + '\n' + read('overlay/overlay.js');
+// (less their "module.exports" lines, which are only for the tests in Node and which the portal marks as errors)
+const forPortal = text => text.replace(/^if \(typeof module !== 'undefined'.*\n/gm, '');
+const js = rooms + chars + forPortal(read('overlay/console.js')) + '\n' + forPortal(read('overlay/life.js')) + '\n' + read('overlay/overlay.js');
 
 // the settings page: paste into the IDE's Advanced Settings (one paste instead of creating every setting by hand)
 write('0-advanced-settings.json', JSON.stringify(require('./settings.js')(), null, 2) + '\n');
@@ -58,7 +60,11 @@ write('11-handler-app-settings-change.js', read('handlers/settings-change.js'));
 write('12-handler-callback.js', read('handlers/callback.js'));
 write('6-overlay-cryptid-html.html', html);
 write('7-overlay-cryptid-js.js', js);
-write('8-overlay-shared-code.js', shared); // the overlay's own shared-code slot gets the same functions (it cannot see the app's)
+// the overlay's own shared-code slot gets the same functions (it cannot see the app's), less the two that only event handlers can run:
+// the overlay has no $callback, $room or $kv.set, and the portal marks those as errors there
+const overlayShared = shared.replace(/\n\/\/ [^\n]*\(event handlers only[^\n]*\nfunction \w+\([^)]*\) \{\n[\s\S]*?\n\}\n/g, '\n');
+if (/\$callback|\$room|\$kv\.set/.test(overlayShared)) throw new Error('the overlay shared code still uses an event-handler-only API');
+write('8-overlay-shared-code.js', overlayShared);
 
 const preview = `<!doctype html>
 <html><head><meta charset="utf-8"><title>Cryptid overlay preview</title>

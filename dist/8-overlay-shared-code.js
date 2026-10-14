@@ -119,12 +119,6 @@ function noticeAllowed(stamps, now, settings) {
   return { ok: true, stamps: recent };
 }
 
-// Sends a chat notice if the hourly cap allows it (event handlers only: it uses $kv and $room).
-function sendCappedNotice(text) {
-  var check = noticeAllowed($kv.get('notice_times', []), Date.now(), $settings);
-  $kv.set('notice_times', check.stamps);
-  if (check.ok) $room.sendNotice(text);
-}
 
 // The goal as the overlay shows it.
 function goalState(progress) {
@@ -156,16 +150,6 @@ function menuNotice(settings, name, goalProgress) {
   return text;
 }
 
-// (Re)starts the timer that posts the menu in chat (event handlers only: it uses $callback).
-function startMenuTimer() {
-  try {
-    $callback.cancel('tip_menu');
-  } catch (e) {
-    // nothing to cancel yet
-  }
-  var mins = menuEveryMinutes($settings);
-  if (mins) $callback.create('tip_menu', mins * 60, true);
-}
 
 // The character's name as chat should call it.
 function characterName(settings) {
