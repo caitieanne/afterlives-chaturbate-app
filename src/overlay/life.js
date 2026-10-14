@@ -52,13 +52,13 @@ var AfterlivesLife = (function () {
   var REACT = { wink: ['wink', 1], kiss: ['kiss', 1], dance: ['dance', 2], smooch: ['smooch', 1], twerk: ['twerk', 2], party: ['party', 2], hello: ['wave', 1], goal: ['party', 3], buzz: ['buzz', 2] };
 
   /** The smooch: they come right up to the camera (this long, in seconds), grow this many times bigger, kiss the screen, then go back. */
-  var SMOOCH = { travel: 0.7, zoom: 2.6, frontY: 1.18 };
+  var SMOOCH = { travel: 0.7, zoom: 2.4, frontY: 1.02 };
 
   /** A lipstick kiss print on the screen's glass, which fades away after a few seconds. Drawn here, no image needed. */
-  function kissMark(screen) {
+  function kissMark(screen, x, y) {
     var m = document.createElement('div');
     var w = Math.max(40, (screen.clientWidth || 200) * 0.34);
-    m.style.cssText = 'position:absolute;left:50%;top:44%;width:' + w + 'px;height:' + w * 0.62 + 'px;margin-left:' + -w / 2 + 'px;margin-top:' + -w * 0.31 + 'px;pointer-events:none;z-index:500;';
+    m.style.cssText = 'position:absolute;left:' + x + 'px;top:' + y + 'px;width:' + w + 'px;height:' + w * 0.62 + 'px;margin-left:' + -w / 2 + 'px;margin-top:' + -w * 0.31 + 'px;pointer-events:none;z-index:500;';
     m.innerHTML =
       '<svg viewBox="0 0 100 62" width="100%" height="100%" style="transform:rotate(' + (Math.random() * 24 - 12).toFixed(0) + 'deg)">' +
       '<path d="M4,30 Q18,4 38,16 Q50,9 62,16 Q82,4 96,30 Q72,33 50,31 Q28,33 4,30Z" fill="#ff3f86" opacity="0.88"/>' +
@@ -183,10 +183,7 @@ var AfterlivesLife = (function () {
         py = sm.y + (SMOOCH.frontY - sm.y) * k;
         zoom = 1 + (SMOOCH.zoom - 1) * k;
         f = e < SMOOCH.travel ? 0 : e < SMOOCH.travel + kissLen ? Math.min(a.n - 1, Math.floor((e - SMOOCH.travel) * (a.fps || 8))) : a.n - 1;
-        if (!sm.marked && e >= SMOOCH.travel + kissLen * 0.45) {
-          sm.marked = true;
-          kissMark(screen);
-        }
+        if (!sm.marked && e >= SMOOCH.travel + kissLen * 0.45) sm.marked = 'now';
         if (e >= SMOOCH.travel * 2 + kissLen) {
           s.react = null;
           if (s.walk) play('walk', s.walk.x < s.x);
@@ -209,6 +206,10 @@ var AfterlivesLife = (function () {
       // feet sit 104 px down each 124 px frame
       el.style.transform = 'translate(' + (box.x + px * box.w - size / 2) + 'px,' + (box.y + py * box.h - size * 0.84 - lift) + 'px)' + (flip ? ' scaleX(-1)' : '');
       el.style.zIndex = String(Math.round(py * 100));
+      if (s.react && s.react.smooch && s.react.smooch.marked === 'now') {
+        s.react.smooch.marked = true;
+        kissMark(screen, box.x + px * box.w, box.y + py * box.h - size * 0.84 + size * 0.62);
+      }
       requestAnimationFrame(draw);
     }
     requestAnimationFrame(draw);

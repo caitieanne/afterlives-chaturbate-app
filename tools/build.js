@@ -104,7 +104,7 @@ function previewTip(n) {
 <script>${js}</script>
 <script>
 var tipRow = document.getElementById('tips');
-[1, 5, 15, 50].forEach(function (n) {
+[1, 5, 15, 25, 35, 50].forEach(function (n) {
   var b = document.createElement('button');
   b.textContent = 'tip ' + n + ' -> ' + pickReaction(n, $settings);
   b.onclick = function () { previewTip(n); };

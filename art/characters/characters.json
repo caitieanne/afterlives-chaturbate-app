@@ -2,16 +2,42 @@
   "peachy": {
     "name": "Peachy",
     "anims": {
-      "idle": { "fps": 6 },
-      "walk": { "fps": 10 },
-      "desk": { "fps": 6 },
-      "lounge": { "fps": 6 },
-      "dance": { "fps": 8 },
-      "wink": { "fps": 8 },
-      "kiss": { "fps": 8 },
-      "wave": { "fps": 8 },
-      "party": { "fps": 10 },
-      "buzz": { "fps": 12 }
+      "idle": {
+        "fps": 6
+      },
+      "walk": {
+        "fps": 10
+      },
+      "desk": {
+        "fps": 6
+      },
+      "lounge": {
+        "fps": 6
+      },
+      "dance": {
+        "fps": 8
+      },
+      "wink": {
+        "fps": 8
+      },
+      "kiss": {
+        "fps": 8
+      },
+      "wave": {
+        "fps": 8
+      },
+      "party": {
+        "fps": 10
+      },
+      "buzz": {
+        "fps": 12
+      },
+      "smooch": {
+        "fps": 8
+      },
+      "twerk": {
+        "fps": 10
+      }
     }
   }
 }
