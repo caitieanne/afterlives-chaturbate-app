@@ -1,0 +1,30 @@
+{
+  "lumi": "d99432d4-e294-4e85-9ef8-36631fd66211",
+  "boo": "4631fa5b-26d6-42c1-8dcd-fea8f8061dc9",
+  "bigfoot": "fa92132f-98ff-49ee-be01-69bf4f56080e",
+  "ness": "a8ad88d6-b3be-4467-817e-ac22be61b191",
+  "chupi": "7e291d48-8e13-4430-8734-ebb2b432d8ad",
+  "jax": "5e6a24d4-cb59-47d1-b64d-61ebe52106c1",
+  "marisol": "037543a1-af5e-4af6-96d1-fd30521c1af4",
+  "kenji": "4d7d3fcb-7932-464f-b9d4-adfaee1a71a2",
+  "ayo": "64b9498a-1b15-4880-b964-87b57ac91aff",
+  "rosa": "9e2e10e9-018c-4081-acc5-fbc52ff0e840",
+  "dev": "8fc62d29-98eb-4a94-816f-6d590ad4a945",
+  "sky": "f3530dbf-c7d1-4794-9cee-23dc3f1cc654",
+  "_rejected": {
+    "lumi_first_try": "85c06c4c-8262-41f8-9d19-92555255fddb",
+    "peachy_v1": "9410e186-ace5-45c7-aeca-dd2c2d4787c6",
+    "cherries_v1": "1e011436-272a-425b-8622-03a0dfa9628f",
+    "bananzo_v1": "fd01ea71-7b80-47bf-b867-80b882d1d9a3"
+  },
+  "fruit": {
+    "peachy": "f86a604d-a08d-4f9c-8319-63aa10b7e89c",
+    "cherries": "7bfa629e-23b0-4143-a4c8-601bb716390a",
+    "eggy": "7cff2471-8d80-4c7f-83ab-2a313fddafe6",
+    "bananzo": "6ff8d06f-5521-449c-b9f1-01c835beb386"
+  },
+  "animals": {
+    "mochi": "263e83f9-3584-4678-ad33-60edf629ac6e",
+    "bruno": "bbec427f-6470-48a5-b2df-2bdc7cc8949e"
+  }
+}

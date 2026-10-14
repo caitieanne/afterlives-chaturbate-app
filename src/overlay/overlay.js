@@ -1,7 +1,7 @@
 // Broadcast Overlay "cryptid" JS.
-// A little cam cryptid on a see-through page, drawn in pixel art by this script (no images, no outside files, as the app rules ask). It
-// reacts to the events the app sends with $overlay.emit('react', { kind, user, amount }): wink, kiss, dance, party, hello.
-// Three to choose from in the app's settings: "lumi" (a ring-light moth), "boo" (a cam ghost) and "bigfoot" (a blurry influencer).
+// A little cam character on a see-through page. It reacts to the events the app sends with $overlay.emit('react', { kind, user, amount }):
+// wink, kiss, dance, party, hello, goal. The sassy fruit (AFTERLIVES_CHARS, PixelLab animations baked in by the build) live in their room
+// (life.js); the older placeholder cryptids "lumi", "boo" and "bigfoot" are drawn by this script on a small canvas.
 
 (function () {
   var W = 64;
@@ -13,11 +13,34 @@
   var tagEl = document.getElementById('tag');
 
   // ---- settings (read only here) ----
-  var settings = typeof $settings === 'object' && $settings ? $settings : {};
-  var CHARACTER = ['lumi', 'boo', 'bigfoot'].indexOf(settings.character) >= 0 ? settings.character : 'lumi';
-  var NAME = String(settings.pet_name || { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER]).slice(0, 16);
+  var settings = typeof $settings === 'object' && $settings ? (typeof flattenSettings === 'function' ? flattenSettings($settings) : $settings) : {};
+  var CHARS = typeof AFTERLIVES_CHARS === 'object' && AFTERLIVES_CHARS ? AFTERLIVES_CHARS : {};
+  // "The Cherries" on the settings page is "cherries" here
+  var picked = String(settings.character || '').toLowerCase().replace(/[^a-z]/g, '').replace(/^the/, '');
+  var DRAWN = ['lumi', 'boo', 'bigfoot'];
+  // a sprite character when one is picked (or any other name: the first one), else one of the drawn placeholders
+  var SPRITE = CHARS[picked] || (DRAWN.indexOf(picked) < 0 && CHARS[Object.keys(CHARS)[0]]) || null;
+  if (SPRITE && !CHARS[picked]) picked = Object.keys(CHARS)[0];
+  var CHARACTER = SPRITE ? picked || Object.keys(CHARS)[0] : ['lumi', 'boo', 'bigfoot'].indexOf(picked) >= 0 ? picked : 'lumi';
+  var NAME = String(settings.pet_name || (SPRITE ? SPRITE.name : { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER])).slice(0, 16);
   // the console it lives in (see console.js); effects go inside its screen. With console_shape "none" it stands on the stream by itself.
   var fx = (typeof AfterlivesConsole === 'object' && AfterlivesConsole.mount(stage, settings, canvas, tagEl)) || stage;
+  var hasConsole = fx !== stage;
+  // no console: the character still keeps to its corner, never the middle of the stream where the performer is
+  if (!hasConsole && typeof AfterlivesConsole === 'object') {
+    fx = AfterlivesConsole.bareCorner(stage, settings, tagEl);
+    fx.appendChild(canvas);
+    canvas.style.cssText = 'position:absolute;left:0;bottom:0;width:100%;height:auto;aspect-ratio:1;margin:0;image-rendering:pixelated;';
+  }
+  // a sprite character lives in the room: walks about, sits at the desk, poses, dances (life.js)
+  var life = null;
+  if (SPRITE && typeof AfterlivesLife === 'object') {
+    canvas.style.display = 'none';
+    var roomKey = AfterlivesConsole.roomKeyOf(settings.room);
+    var roomArt = hasConsole ? AfterlivesConsole.roomOf(settings.room) : null;
+    life = AfterlivesLife.mount(fx, SPRITE, roomArt ? roomKey : 'dusk', roomArt);
+    window.afterlivesPet = life; // lets the preview page send them to a spot
+  }
 
   // ---- drawing helpers (everything is whole pixels on a 64 x 64 canvas) ----
   function rect(x, y, w, h, c) {
@@ -86,7 +109,7 @@
 
   // ---- what the cryptid is doing right now ----
   var react = null; // { kind, t0 }
-  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0 };
+  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0, smooch: 3.0, twerk: 3.6 };
   var hearts = []; // the hearts a kiss sends flying: { x, y, vx, vy, t0 }
 
   function pose(t) {
@@ -104,11 +127,11 @@
           s.winkR = r > 0.15 && r < 1.0;
           s.flare = Math.max(0, 1 - r) * 0.6;
           s.mouth = 'open';
-        } else if (k === 'kiss') {
+        } else if (k === 'kiss' || k === 'smooch') {
           s.kissing = r > 0.25 && r < 1.1;
           s.mouth = s.kissing ? 'kiss' : 'smile';
           s.flare = 0.5;
-        } else if (k === 'dance') {
+        } else if (k === 'dance' || k === 'twerk') {
           s.jump = -Math.abs(Math.sin(r * 7)) * 5;
           s.sway = Math.sin(r * 7) * 3;
           s.mouth = 'open';
@@ -315,6 +338,7 @@
   // ---- the loop ----
   var t0 = performance.now();
   function frame(now) {
+    if (life) return; // the sprite character draws itself
     var t = (now - t0) / 1000;
     var s = pose(t);
     ctx.clearRect(0, 0, W, W);
@@ -384,6 +408,8 @@
     dance: ['{u} made me dance!', 'Dancing for {u}!', 'Wheee! Thank you, {u}!'],
     party: ['{u} threw a PARTY!!', 'PARTY for {u}!', '{u}!!! Confetti!'],
     hello: ['Hi {u}! Welcome in.', 'Welcome, {u}!', '{u} is here! Hi!'],
+    smooch: ['MWAH! A big one for {u}!', '{u} gets a smooch on the screen!', 'Come here, {u}... mwah!'],
+    twerk: ['{u} made me twerk!', 'Twerking for {u}!', 'Look at it go, {u}!'],
     goal: ['GOAL! {g}! Thank you, {u}!', 'We did it: {g}! {u}, you star!', '{g}: DONE! Thank you all!'],
   };
   // what it says on its own, now and then (how often is the broadcaster's "speak_per_hour"); never anything about money
@@ -404,7 +430,7 @@
     var list = LINES[kind] || LINES.wink;
     return list[Math.floor(Math.random() * list.length)].replace('{u}', user || 'someone').replace('{g}', goalName);
   }
-  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
+  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], smooch: ['💋', '💋', '💜', '💋'], twerk: ['🍑', '✨', '🍑', '🎶'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
 
   // ---- events from the app ----
   $overlay.on(
@@ -412,6 +438,7 @@
     function (e) {
       var kind = DUR[e.kind] ? e.kind : 'wink';
       react = { kind: kind, t0: (performance.now() - t0) / 1000 };
+      if (life) life.react(kind);
       if (kind === 'goal') {
         if (e.goal) goalName = String(e.goal).slice(0, 30);
         say(lineFor('goal', e.user), 7000);
@@ -435,14 +462,7 @@
   var sp = document.createElement('span');
   sp.textContent = '♥♥♥♥♡';
   tagEl.appendChild(sp);
-  if (settings.show_menu === true && typeof menuOf === 'function') {
-    var items = menuOf(settings);
-    var LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', party: 'Party!' };
-    menuEl.style.display = 'block';
-    menuEl.innerHTML = '<h4>TIP MENU</h4>' + items.map(function (m) {
-      return '<div><span>' + LABEL[m.kind] + '</span><b>' + m.tokens + '+</b></div>';
-    }).join('');
-  }
+  // the tip menu is not on the overlay: the app posts it in chat on a timer (see handlers/callback.js), so the overlay stays in its corner
   setTimeout(function () {
     say('Hi! I am ' + NAME + '.', 3200);
   }, 1200);
@@ -458,11 +478,12 @@
     if (!goalEl) {
       goalEl = document.createElement('div');
       goalEl.id = 'goal';
-      stage.appendChild(goalEl);
+      // inside the name pill on the console, never out in the middle of the stream
+      tagEl.appendChild(goalEl);
     }
     goalName = String(g.name || goalName).slice(0, 30);
     var pct = Math.max(0, Math.min(100, (g.progress / g.goal) * 100));
-    goalEl.style.display = 'block';
+    goalEl.style.display = 'flex';
     goalEl.innerHTML = '';
     var h = document.createElement('h4');
     h.textContent = goalName;

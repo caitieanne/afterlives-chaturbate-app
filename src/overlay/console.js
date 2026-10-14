@@ -8,16 +8,16 @@
 var AfterlivesConsole = (function () {
   // ---- colors (names and plastic tones from the game's console colors) ----
   var COLORS = [
-    { id: 'cauldron', hex: '#2b2b36', dark: true },
-    { id: 'nessie', hex: '#18b2c6' },
-    { id: 'gloomberry', hex: '#3f64e0' },
-    { id: 'coven', hex: '#8a47d6' },
-    { id: 'ghoul_gum', hex: '#ff6fb5' },
-    { id: 'vampire', hex: '#e93d58' },
-    { id: 'pumpkin', hex: '#ff8a1f' },
-    { id: 'slime', hex: '#7fd02e' },
-    { id: 'tombstone', hex: '#6d7280' },
-    { id: 'ghost', hex: '#bfe4ff' },
+    { id: 'cauldron', name: 'Cauldron', hex: '#2b2b36', dark: true },
+    { id: 'nessie', name: 'Nessie', hex: '#18b2c6' },
+    { id: 'gloomberry', name: 'Gloomberry', hex: '#3f64e0' },
+    { id: 'coven', name: 'Coven', hex: '#8a47d6' },
+    { id: 'ghoul_gum', name: 'Ghoul Gum', hex: '#ff6fb5' },
+    { id: 'vampire', name: 'Vampire', hex: '#e93d58' },
+    { id: 'pumpkin', name: 'Pumpkin', hex: '#ff8a1f' },
+    { id: 'slime', name: 'Slime', hex: '#7fd02e' },
+    { id: 'tombstone', name: 'Tombstone', hex: '#6d7280' },
+    { id: 'ghost', name: 'Ghost', hex: '#bfe4ff' },
   ];
 
   function hexToHsl(hex) {
@@ -59,10 +59,11 @@ var AfterlivesConsole = (function () {
     return [Math.round(a[0] * t + b[0] * (1 - t)), Math.round(a[1] * t + b[1] * (1 - t)), Math.round(a[2] * t + b[2] * (1 - t))];
   }
 
-  /** A color by its name ("coven", "ghoul gum", "Ghoul_Gum" all work), or Coven. */
+  /** A color by its name ("coven", "ghoul gum", "Ghoul_Gum" all work) or its hex code (what the settings page's color picker gives), or Coven. */
   function colorOf(name) {
-    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
-    for (var i = 0; i < COLORS.length; i++) if (COLORS[i].id === key) return COLORS[i];
+    var raw = String(name || '').toLowerCase();
+    var key = raw.replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
+    for (var i = 0; i < COLORS.length; i++) if (COLORS[i].id === key || COLORS[i].hex === raw) return COLORS[i];
     return COLORS[3];
   }
 
@@ -164,14 +165,56 @@ var AfterlivesConsole = (function () {
   /** The painted room for a name, as an image address, or null for the dusk sky (the default, and anything not known). */
   function roomOf(name) {
     var rooms = typeof AFTERLIVES_ROOMS === 'object' && AFTERLIVES_ROOMS ? AFTERLIVES_ROOMS : {};
-    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '');
+    var key = roomKeyOf(name);
     return Object.prototype.hasOwnProperty.call(rooms, key) ? rooms[key] : null;
   }
+
+  /** The rooms as the settings page lists them: [id, name]. */
+  var ROOM_LABELS = [
+    ['dusk', 'Dusk sky'],
+    ['dreamy', 'Dreamy bedroom'],
+    ['goth', 'Goth parlor'],
+    ['vaporwave', 'Vaporwave den'],
+    ['neon', 'Neon den'],
+    ['starship', 'Starship cabin'],
+    ['cyber', 'Cyber pad'],
+    ['boutique', 'Boutique'],
+    ['music', 'Music studio'],
+    ['studio', 'Art studio'],
+    ['slime', 'Slime bedroom'],
+    ['academia', 'Dark academia'],
+    ['library', 'Library nook'],
+    ['cottage', 'Cottage'],
+    ['zen', 'Zen spa'],
+    ['rooftop', 'Rooftop'],
+    ['campfire', 'Campfire'],
+    ['gym', 'Home gym'],
+  ];
+  /** A room's id from its id or its name on the settings page ("Dreamy bedroom" gives "dreamy"); "dusk" for anything else. */
+  function roomKeyOf(name) {
+    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '');
+    for (var i = 0; i < ROOM_LABELS.length; i++) {
+      if (ROOM_LABELS[i][0] === key || ROOM_LABELS[i][1].toLowerCase().replace(/[^a-z]+/g, '') === key) return ROOM_LABELS[i][0];
+    }
+    return 'dusk';
+  }
+  /** The console shapes as the settings page lists them: [id, name]. */
+  var SHAPE_LABELS = [
+    ['coffin', 'Coffin'],
+    ['heart', 'Heart'],
+    ['moon', 'Crescent moon'],
+    ['star', 'Star'],
+    ['diamond', 'Diamond'],
+    ['harlequin', 'Harlequin'],
+    ['circle', 'Circle'],
+    ['box', 'Box'],
+    ['none', 'No console'],
+  ];
 
   /** A shape by its name, or null for "none" (the cryptid on its own, no console). Unknown names give the coffin. */
   function shapeOf(name) {
     var key = String(name === undefined || name === null || name === '' ? 'coffin' : name).toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
-    if (key === 'none' || key === 'off') return null;
+    if (key === 'none' || key === 'off' || key === 'no_console') return null;
     return SHAPES[SHAPE_NAMES[key] || key] || SHAPES.coffin;
   }
 
@@ -202,16 +245,92 @@ var AfterlivesConsole = (function () {
     return out.trim();
   }
 
-  /** How big the shape is drawn on a page of `w` by `h`: the screen's box on the page, and the scale. */
-  var BAND = 9; // plastic all round the screen, in the shape's units
+  /** The console lives in one corner of the stream and never reaches the middle, where the performer is: this much of the stream's height,
+   * and at most this much of its width. */
+  var CORNER_HEIGHT = 0.38;
+  var CORNER_WIDTH = 0.34;
+  var CORNERS = [
+    ['bottom_right', 'Bottom right'],
+    ['bottom_left', 'Bottom left'],
+    ['top_right', 'Top right'],
+    ['top_left', 'Top left'],
+  ];
+  /** A corner from its id or its name on the settings page; bottom right by default. */
+  function cornerOf(name) {
+    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
+    for (var i = 0; i < CORNERS.length; i++) if (CORNERS[i][0] === key) return CORNERS[i][0];
+    return 'bottom_right';
+  }
+
+  /** How big the shape is drawn on a page of `w` by `h`: the screen's box on the page, and the scale. With a corner, the console sits in
+   * that corner at CORNER_HEIGHT of the page; without one, it fills the page (the tests and old previews). */
+  var BAND = 6; // plastic all round the screen, in the shape's units (thin, to show off more of the room)
   var RIM = 2;
   var BEZEL = 2.6;
-  function layout(shape, w, h) {
-    var m = 6;
-    var k = Math.max(0.2, Math.min((w - m * 2) / (shape.w + (BAND + RIM) * 2), (h - m * 2) / (shape.h + (BAND + RIM) * 2)));
+  function layout(shape, w, h, corner) {
+    var m = corner ? Math.max(6, h * 0.02) : 6;
+    var maxW = corner ? w * CORNER_WIDTH : w - m * 2;
+    var maxH = corner ? h * CORNER_HEIGHT : h - m * 2;
+    var k = Math.max(0.2, Math.min(maxW / (shape.w + (BAND + RIM) * 2), maxH / (shape.h + (BAND + RIM) * 2)));
     var sw = shape.w * k;
     var sh = shape.h * k;
-    return { k: k, x: (w - sw) / 2, y: (h - sh) / 2, w: sw, h: sh };
+    var edge = (BAND + RIM) * k;
+    if (!corner) return { k: k, x: (w - sw) / 2, y: (h - sh) / 2, w: sw, h: sh, edge: edge };
+    var right = corner.indexOf('right') >= 0;
+    var bottom = corner.indexOf('bottom') >= 0;
+    return { k: k, x: right ? w - m - edge - sw : m + edge, y: bottom ? h - m - edge - sh : m + edge, w: sw, h: sh, edge: edge, corner: corner };
+  }
+
+  /** Puts the speech bubble over the top of the console's screen, within the console's own width, so nothing reaches the middle of the
+   * stream. (The tip menu goes in chat instead, on a timer; the goal shows in the name pill.) */
+  function placeAround(stage, L) {
+    var u = clamp(L.h / 260, 0.7, 3); // text grows with the console
+    // the name pill stands on the console's bottom edge and grows upward over the screen, so however tall it gets (the goal line), it never
+    // hangs off the bottom of the stream
+    var tag = document.getElementById('tag');
+    if (tag) {
+      var H = stage.clientHeight || window.innerHeight;
+      tag.style.top = 'auto';
+      tag.style.bottom = H - (L.y + L.h + L.edge * 0.5) + 'px';
+      tag.style.transform = 'translateX(-50%)';
+    }
+    var bubble = document.getElementById('bubble');
+    if (bubble) {
+      bubble.style.left = L.x + L.w / 2 + 'px';
+      bubble.style.top = L.y + L.h * 0.05 + 'px';
+      bubble.style.maxWidth = L.w * 0.96 + 'px';
+      bubble.style.fontSize = 15 * u + 'px';
+      bubble.style.zIndex = '900';
+    }
+    return { u: u };
+  }
+
+  /** No console: the character still lives in the same corner, in a box the size the console's screen would be. Returns that box. */
+  function bareCorner(stage, settings, tagEl) {
+    var area = document.createElement('div');
+    area.id = 'screen';
+    area.style.cssText = 'position:absolute;overflow:hidden;';
+    stage.appendChild(area);
+    function place() {
+      var W = stage.clientWidth || window.innerWidth;
+      var H = stage.clientHeight || window.innerHeight;
+      var L = layout(SHAPES.coffin, W, H, cornerOf(settings.console_position));
+      area.style.left = L.x + 'px';
+      area.style.top = L.y + 'px';
+      area.style.width = L.w + 'px';
+      area.style.height = L.h + 'px';
+      if (tagEl) {
+        tagEl.style.left = L.x + L.w / 2 + 'px';
+        tagEl.style.top = L.y + L.h + 'px';
+        tagEl.style.bottom = 'auto';
+        tagEl.style.transform = 'translate(-50%, -50%)';
+        tagEl.style.fontSize = clamp(L.h * 0.042, 7, 28) + 'px';
+      }
+      placeAround(stage, L);
+    }
+    place();
+    window.addEventListener('resize', place);
+    return area;
   }
 
   // ---- putting it on the page ----
@@ -258,7 +377,7 @@ var AfterlivesConsole = (function () {
     screen.appendChild(backdrop);
     var room = roomOf(settings.room);
     if (room) {
-      backdrop.style.background = '#120c22 url(' + room + ') center 45% / cover no-repeat';
+      backdrop.style.background = '#120c22 url(' + room + ') center 80% / cover no-repeat';
       backdrop.style.imageRendering = 'pixelated';
     }
     for (var i = 0; i < (room ? 0 : 18); i++) {
@@ -276,7 +395,7 @@ var AfterlivesConsole = (function () {
     function place() {
       var W = stage.clientWidth || window.innerWidth;
       var H = stage.clientHeight || window.innerHeight;
-      var L = layout(shape, W, H);
+      var L = layout(shape, W, H, cornerOf(settings.console_position));
       var d = pathText(shape.path, L.k, L.x, L.y);
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
       var band = BAND * L.k;
@@ -310,21 +429,23 @@ var AfterlivesConsole = (function () {
       // the name and the hearts float on a pill near the bottom of the screen
       if (tagEl) {
         tagEl.style.left = L.x + shape.pill[0] * L.w + 'px';
-        tagEl.style.top = L.y + shape.pill[1] * L.h + 'px';
+        // on the console's bottom edge, so it never covers the character in the room
+        tagEl.style.top = L.y + L.h + 'px';
         tagEl.style.bottom = 'auto';
         tagEl.style.transform = 'translate(-50%, -50%)';
-        tagEl.style.fontSize = clamp(L.h * 0.055, 12, 30) + 'px';
+        tagEl.style.fontSize = clamp(L.h * 0.042, 7, 28) + 'px';
         tagEl.style.background = 'rgba(18,10,30,0.74)';
         tagEl.style.borderColor = t.ring;
         tagEl.style.boxShadow = '0 3px 10px rgba(0,0,0,0.45)';
       }
+      placeAround(stage, L);
     }
     place();
     window.addEventListener('resize', place);
     return screen;
   }
 
-  return { COLORS: COLORS, SHAPES: SHAPES, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
+  return { COLORS: COLORS, SHAPES: SHAPES, ROOM_LABELS: ROOM_LABELS, SHAPE_LABELS: SHAPE_LABELS, CORNERS: CORNERS, cornerOf: cornerOf, bareCorner: bareCorner, roomKeyOf: roomKeyOf, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = AfterlivesConsole;

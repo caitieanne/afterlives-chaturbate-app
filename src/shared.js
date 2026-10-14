@@ -1,11 +1,33 @@
 // SHARED CODE (the app's "Shared code" slot). It runs before every event handler, so the handlers can call these. Plain functions only: anything
 // that has to survive between events lives in $kv, never in a variable here.
 
+// The settings page groups settings into sections (fieldsets, see dist/0-advanced-settings.json). In case Chaturbate hands them back nested
+// under their section rather than flat, lift them out, so $settings.room works either way.
+function flattenSettings(s) {
+  var out = {};
+  for (var k in s) {
+    var v = s[k];
+    if (v && typeof v === 'object' && !Array.isArray(v)) for (var k2 in v) out[k2] = v[k2];
+    else out[k] = v;
+  }
+  return out;
+}
+if (typeof $settings === 'object' && $settings) {
+  try {
+    var flatSettings = flattenSettings($settings);
+    for (var fk in flatSettings) $settings[fk] = flatSettings[fk];
+  } catch (e) {
+    // read-only: the handlers read flat settings already
+  }
+}
+
 // The reactions a tip can set off, cheapest first. Each has a setting (tokens it needs; 0 or empty turns it off).
 var REACTIONS = [
   { kind: 'wink', setting: 'tip_wink', fallback: 1 },
   { kind: 'kiss', setting: 'tip_kiss', fallback: 5 },
   { kind: 'dance', setting: 'tip_dance', fallback: 15 },
+  { kind: 'smooch', setting: 'tip_smooch', fallback: 25 }, // walks right up to the camera and kisses the screen
+  { kind: 'twerk', setting: 'tip_twerk', fallback: 35 },
   { kind: 'party', setting: 'tip_party', fallback: 50 },
 ];
 
@@ -107,4 +129,47 @@ function sendCappedNotice(text) {
 // The goal as the overlay shows it.
 function goalState(progress) {
   return { progress: progress, goal: goalOf($settings), name: String($settings.tip_goal_name || 'Tip goal').slice(0, 30) };
+}
+
+// ---- the tip menu in chat (like Lovense: posted every few minutes, not shown on the overlay, which stays in its corner) ----
+
+var MENU_LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party' };
+
+// How often the menu goes in chat, in minutes (10 by default; 0 or empty: never). At least once every 2 minutes, at most every 2 hours.
+function menuEveryMinutes(settings) {
+  if (settings.tip_menu_in_chat === false) return 0;
+  var v = settings.tip_menu_every;
+  if (v === undefined) v = 10;
+  v = Number(v);
+  if (!isFinite(v) || v <= 0) return 0;
+  return Math.max(2, Math.min(120, Math.round(v)));
+}
+
+// The tip menu as one chat line, with the goal when there is one: "Peachy's tip menu: Wink 1 | Kiss 5 | ... Goal: New ring light 120/500"
+function menuNotice(settings, name, goalProgress) {
+  var items = menuOf(settings).map(function (m) {
+    return MENU_LABEL[m.kind] + ' ' + m.tokens;
+  });
+  var text = '\u{1F48B} ' + name + "'s tip menu: " + items.join(' | ');
+  var goal = goalOf(settings);
+  if (goal) text += '  \u{1F3AF} ' + String(settings.tip_goal_name || 'Tip goal').slice(0, 30) + ': ' + Math.min(goal, Math.max(0, Number(goalProgress) || 0)) + '/' + goal;
+  return text;
+}
+
+// (Re)starts the timer that posts the menu in chat (event handlers only: it uses $callback).
+function startMenuTimer() {
+  try {
+    $callback.cancel('tip_menu');
+  } catch (e) {
+    // nothing to cancel yet
+  }
+  var mins = menuEveryMinutes($settings);
+  if (mins) $callback.create('tip_menu', mins * 60, true);
+}
+
+// The character's name as chat should call it.
+function characterName(settings) {
+  var names = { peachy: 'Peachy', cherries: 'The Cherries', eggy: 'Eggy', bananzo: 'Bananzo' };
+  var key = String(settings.character || '').toLowerCase().replace(/[^a-z]/g, '').replace(/^the/, '');
+  return String(settings.pet_name || names[key] || 'Peachy').slice(0, 16);
 }
