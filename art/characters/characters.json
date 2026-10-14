@@ -142,6 +142,24 @@
       },
       "wink": {
         "fps": 8
+      },
+      "kiss": {
+        "fps": 8
+      },
+      "wave": {
+        "fps": 8
+      },
+      "party": {
+        "fps": 10
+      },
+      "buzz": {
+        "fps": 12
+      },
+      "smooch": {
+        "fps": 8
+      },
+      "twerk": {
+        "fps": 10
       }
     }
   }
