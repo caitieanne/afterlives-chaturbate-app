@@ -727,7 +727,6 @@ var AfterlivesConsole = (function () {
   return { COLORS: COLORS, SHAPES: SHAPES, ROOM_LABELS: ROOM_LABELS, SHAPE_LABELS: SHAPE_LABELS, CORNERS: CORNERS, cornerOf: cornerOf, bareCorner: bareCorner, roomKeyOf: roomKeyOf, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
 })();
 
-if (typeof module !== 'undefined' && module.exports) module.exports = AfterlivesConsole;
 
 // The character's life in their room: they walk between the room's spots (the bed or couch, the desk chair, the rug, the window), do the
 // thing that spot is for (pose, type, dance, gaze), and get smaller the further back in the room they go. A tip or a goal interrupts:
@@ -964,7 +963,6 @@ var AfterlivesLife = (function () {
   return { ROOMS: ROOMS, depthScale: depthScale, nextSpot: nextSpot, REACT: REACT, mount: mount };
 })();
 
-if (typeof module !== 'undefined' && module.exports) module.exports = AfterlivesLife;
 
 // Broadcast Overlay "cryptid" JS.
 // A little cam character on a see-through page. It reacts to the events the app sends with $overlay.emit('react', { kind, user, amount }):

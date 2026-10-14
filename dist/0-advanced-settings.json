@@ -34,7 +34,7 @@
       "room": {
         "type": "string",
         "title": "Room",
-        "description": "Where your character lives: the starry dusk sky or one of the rooms.",
+        "description": "Where your character lives: the dusk sky or a room.",
         "enum": [
           "Dusk sky",
           "Dreamy bedroom",
@@ -60,7 +60,7 @@
       "console_position": {
         "type": "string",
         "title": "Corner",
-        "description": "Which corner of your stream it sits in. It stays in its corner, about a third of the stream tall, clear of you.",
+        "description": "The corner of your stream it sits in, clear of you.",
         "enum": [
           "Bottom right",
           "Bottom left",
@@ -135,7 +135,7 @@
       "tip_wink": {
         "type": "number",
         "title": "Wink",
-        "description": "Tokens for a wink. A tip below everything still gets a wink. 0 turns it off.",
+        "description": "Tokens for a wink (smaller tips get one too). 0: off.",
         "minimum": 0,
         "maximum": 100000,
         "default": 1
@@ -159,7 +159,7 @@
       "tip_smooch": {
         "type": "number",
         "title": "Smooch",
-        "description": "Tokens for a smooch: they walk right up and kiss the screen. 0 turns it off.",
+        "description": "Tokens for a smooch on the screen. 0: off.",
         "minimum": 0,
         "maximum": 100000,
         "default": 25
@@ -175,7 +175,7 @@
       "tip_party": {
         "type": "number",
         "title": "Party",
-        "description": "Tokens for a party with confetti. A new fan club member always gets one. 0 turns it off.",
+        "description": "Tokens for a confetti party (new fans get one). 0: off.",
         "minimum": 0,
         "maximum": 100000,
         "default": 50
@@ -188,7 +188,7 @@
       "tip_menu_every": {
         "type": "number",
         "title": "Post it every (minutes)",
-        "description": "How often the tip menu goes in chat, like a Lovense menu. Between 2 and 120.",
+        "description": "How often the tip menu goes in chat (2 to 120).",
         "minimum": 0,
         "maximum": 120,
         "default": 10
@@ -204,7 +204,7 @@
       "tip_goal": {
         "type": "number",
         "title": "Goal (tokens)",
-        "description": "Tips count toward it, its progress shows on the console and in the chat tip menu, and reaching it sets off a big celebration. 0: no goal.",
+        "description": "Tips count toward it; reaching it starts a party. 0: no goal.",
         "minimum": 0,
         "maximum": 100000,
         "default": 0
@@ -243,7 +243,7 @@
       "chat_commands": {
         "type": "boolean",
         "title": "Free chat commands",
-        "description": "Anyone can use /wink /kiss /dance /party (one each per person every 10 seconds).",
+        "description": "Anyone can use /wink /kiss /dance /party (every 10 s).",
         "default": true
       },
       "greet": {
@@ -268,7 +268,7 @@
       "chat_notices_per_hour": {
         "type": "number",
         "title": "Most chat notices per hour",
-        "description": "The app never posts more than this many chat notices an hour. 0: none.",
+        "description": "The app never posts more than this an hour. 0: none.",
         "minimum": 0,
         "maximum": 60,
         "default": 10
