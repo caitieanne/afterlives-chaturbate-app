@@ -252,6 +252,11 @@ function startMenuTimer() {
   if (mins) $callback.create('tip_menu', mins * 60, true);
 }
 
+// Posts the tip menu in chat now, if the broadcaster has it on (event handlers only: it uses $kv and $room).
+function postMenu() {
+  if (menuEveryMinutes($settings)) sendCappedNotice(menuNotice($settings, characterName($settings), $kv.get('goal_progress', 0)));
+}
+
 // The character's name as chat should call it.
 function characterName(settings) {
   var names = { peachy: 'Peachy', cherries: 'The Cherries', eggy: 'Eggy', bananzo: 'Bananzo' };

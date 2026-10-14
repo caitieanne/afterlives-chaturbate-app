@@ -155,6 +155,7 @@ function menuNotice(settings, name, goalProgress) {
 }
 
 
+
 // The character's name as chat should call it.
 function characterName(settings) {
   var names = { peachy: 'Peachy', cherries: 'The Cherries', eggy: 'Eggy', bananzo: 'Bananzo' };
