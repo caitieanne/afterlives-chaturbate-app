@@ -258,7 +258,7 @@ var AfterlivesConsole = (function () {
     screen.appendChild(backdrop);
     var room = roomOf(settings.room);
     if (room) {
-      backdrop.style.background = '#120c22 url(' + room + ') center 45% / cover no-repeat';
+      backdrop.style.background = '#120c22 url(' + room + ') center 80% / cover no-repeat';
       backdrop.style.imageRendering = 'pixelated';
     }
     for (var i = 0; i < (room ? 0 : 18); i++) {
@@ -310,7 +310,8 @@ var AfterlivesConsole = (function () {
       // the name and the hearts float on a pill near the bottom of the screen
       if (tagEl) {
         tagEl.style.left = L.x + shape.pill[0] * L.w + 'px';
-        tagEl.style.top = L.y + shape.pill[1] * L.h + 'px';
+        // on the console's bottom edge, so it never covers the character in the room
+        tagEl.style.top = L.y + L.h + 'px';
         tagEl.style.bottom = 'auto';
         tagEl.style.transform = 'translate(-50%, -50%)';
         tagEl.style.fontSize = clamp(L.h * 0.055, 12, 30) + 'px';

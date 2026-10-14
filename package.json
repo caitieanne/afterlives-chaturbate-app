@@ -6,6 +6,10 @@
   "license": "MIT-0",
   "scripts": {
     "build": "node tools/build.js",
-    "test": "node test/shared.test.js"
+    "test": "node test/shared.test.js",
+    "pack": "node tools/pack-characters.js"
+  },
+  "devDependencies": {
+    "sharp": "^0.35.5"
   }
 }

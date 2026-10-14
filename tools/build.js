@@ -22,8 +22,25 @@ const rooms =
   '// The painted rooms for the console screen, made by tools/build.js from art/rooms (do not edit by hand).\nvar AFTERLIVES_ROOMS = {\n' +
   roomNames.map(f => '  ' + f.replace(/\.webp$/, '') + ": 'data:image/webp;base64," + fs.readFileSync(path.join(ROOMS_DIR, f)).toString('base64') + "',").join('\n') +
   '\n};\n';
-// the overlay's JS slot is the rooms, the console (its shapes and colors), then the cryptid itself
-const js = rooms + read('overlay/console.js') + '\n' + read('overlay/overlay.js');
+// The characters' animations (strips made by tools/pack-characters.js from the PixelLab frames), baked in the same way.
+const CHARS_DIR = path.join(ROOT, 'art', 'characters');
+const charManifest = fs.existsSync(path.join(CHARS_DIR, 'characters.json')) ? JSON.parse(fs.readFileSync(path.join(CHARS_DIR, 'characters.json'), 'utf8')) : {};
+const charsOut = {};
+for (const [name, chr] of Object.entries(charManifest)) {
+  const anims = {};
+  for (const [anim, opt] of Object.entries(chr.anims)) {
+    const strip = path.join(CHARS_DIR, name, anim + '.webp');
+    const frames = fs.readdirSync(path.join(CHARS_DIR, name, anim)).filter(f => /^\d+\.png$/.test(f)).length;
+    anims[anim] = { src: 'data:image/webp;base64,' + fs.readFileSync(strip).toString('base64'), n: frames, fps: opt.fps || 8 };
+  }
+  charsOut[name] = { name: chr.name, anims };
+}
+const chars =
+  '// The characters and their animations, made by tools/build.js from art/characters (do not edit by hand).\nvar AFTERLIVES_CHARS = ' +
+  JSON.stringify(charsOut) +
+  ';\n';
+// the overlay's JS slot is the rooms, the characters, the console (its shapes and colors), their life in the room, then the overlay itself
+const js = rooms + chars + read('overlay/console.js') + '\n' + read('overlay/life.js') + '\n' + read('overlay/overlay.js');
 
 // the slots, named as the IDE names them
 write('1-app-shared-code.js', shared);
@@ -97,7 +114,7 @@ var tipRow = document.getElementById('tips');
   tipRow.appendChild(b);
 });
 var chars = document.getElementById('chars');
-['lumi', 'boo', 'bigfoot'].forEach(function (c) {
+Object.keys(typeof AFTERLIVES_CHARS === 'object' ? AFTERLIVES_CHARS : {}).concat(['lumi', 'boo', 'bigfoot']).forEach(function (c) {
   var b = document.createElement('button');
   b.textContent = 'show ' + c;
   b.onclick = function () { q.set('character', c); location.search = q.toString(); };

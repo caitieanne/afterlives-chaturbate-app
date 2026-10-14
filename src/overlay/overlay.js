@@ -1,7 +1,7 @@
 // Broadcast Overlay "cryptid" JS.
-// A little cam cryptid on a see-through page, drawn in pixel art by this script (no images, no outside files, as the app rules ask). It
-// reacts to the events the app sends with $overlay.emit('react', { kind, user, amount }): wink, kiss, dance, party, hello.
-// Three to choose from in the app's settings: "lumi" (a ring-light moth), "boo" (a cam ghost) and "bigfoot" (a blurry influencer).
+// A little cam character on a see-through page. It reacts to the events the app sends with $overlay.emit('react', { kind, user, amount }):
+// wink, kiss, dance, party, hello, goal. The sassy fruit (AFTERLIVES_CHARS, PixelLab animations baked in by the build) live in their room
+// (life.js); the older placeholder cryptids "lumi", "boo" and "bigfoot" are drawn by this script on a small canvas.
 
 (function () {
   var W = 64;
@@ -14,10 +14,22 @@
 
   // ---- settings (read only here) ----
   var settings = typeof $settings === 'object' && $settings ? $settings : {};
-  var CHARACTER = ['lumi', 'boo', 'bigfoot'].indexOf(settings.character) >= 0 ? settings.character : 'lumi';
-  var NAME = String(settings.pet_name || { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER]).slice(0, 16);
+  var CHARS = typeof AFTERLIVES_CHARS === 'object' && AFTERLIVES_CHARS ? AFTERLIVES_CHARS : {};
+  var picked = String(settings.character || '').toLowerCase().replace(/[^a-z]/g, '');
+  // a sprite character when one is picked (or by default, the first one), else one of the drawn placeholders
+  var SPRITE = CHARS[picked] || (!picked && CHARS[Object.keys(CHARS)[0]]) || null;
+  var CHARACTER = SPRITE ? picked || Object.keys(CHARS)[0] : ['lumi', 'boo', 'bigfoot'].indexOf(picked) >= 0 ? picked : 'lumi';
+  var NAME = String(settings.pet_name || (SPRITE ? SPRITE.name : { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER])).slice(0, 16);
   // the console it lives in (see console.js); effects go inside its screen. With console_shape "none" it stands on the stream by itself.
   var fx = (typeof AfterlivesConsole === 'object' && AfterlivesConsole.mount(stage, settings, canvas, tagEl)) || stage;
+  // a sprite character lives in the room: walks about, sits at the desk, poses, dances (life.js)
+  var life = null;
+  if (SPRITE && typeof AfterlivesLife === 'object') {
+    canvas.style.display = 'none';
+    var roomKey = String(settings.room || 'dusk').toLowerCase().replace(/[^a-z]/g, '');
+    var roomArt = fx !== stage && typeof AfterlivesConsole === 'object' ? AfterlivesConsole.roomOf(settings.room) : null;
+    life = AfterlivesLife.mount(fx, SPRITE, roomArt ? roomKey : 'dusk', roomArt);
+  }
 
   // ---- drawing helpers (everything is whole pixels on a 64 x 64 canvas) ----
   function rect(x, y, w, h, c) {
@@ -315,6 +327,7 @@
   // ---- the loop ----
   var t0 = performance.now();
   function frame(now) {
+    if (life) return; // the sprite character draws itself
     var t = (now - t0) / 1000;
     var s = pose(t);
     ctx.clearRect(0, 0, W, W);
@@ -412,6 +425,7 @@
     function (e) {
       var kind = DUR[e.kind] ? e.kind : 'wink';
       react = { kind: kind, t0: (performance.now() - t0) / 1000 };
+      if (life) life.react(kind);
       if (kind === 'goal') {
         if (e.goal) goalName = String(e.goal).slice(0, 30);
         say(lineFor('goal', e.user), 7000);

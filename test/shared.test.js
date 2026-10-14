@@ -96,3 +96,16 @@ assert.strictEqual(roomFiles.length, 17);
 const slot = fs.readFileSync(path.join(__dirname, '..', 'dist', '7-overlay-cryptid-js.js'), 'utf8');
 for (const f of roomFiles) assert.ok(slot.includes('  ' + f.replace('.webp', '') + ": 'data:image/webp;base64,"), f + ' is in the overlay');
 console.log('console.js: all checks passed');
+
+// the characters' life in their room: every painted room has its spots, and they never pick the spot they are already at
+const L = require('../src/overlay/life.js');
+for (const f of fs.readdirSync(path.join(__dirname, '..', 'art', 'rooms')).filter(f => f.endsWith('.webp'))) {
+  const r = L.ROOMS[f.replace('.webp', '')];
+  assert.ok(r, f + ' has spots');
+  assert.ok(r.rug && r.window, f + ' has a rug and a window spot');
+  for (const n of ['lounge', 'desk', 'rug', 'window']) if (r[n]) assert.ok(r[n][1] >= r.back && r[n][1] <= r.front, f + ' ' + n + ' is on the floor');
+}
+assert.ok(L.depthScale(L.ROOMS.cyber, 0.58) < L.depthScale(L.ROOMS.cyber, 0.9), 'smaller further back');
+for (let i = 0; i < 20; i++) assert.notStrictEqual(L.nextSpot(L.ROOMS.cyber, 'desk'), 'desk', 'never the same spot again');
+assert.strictEqual(L.nextSpot(L.ROOMS.gym, 'rug'), 'window', 'a bare room still has somewhere to go');
+console.log('life.js: all checks passed');
