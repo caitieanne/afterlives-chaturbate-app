@@ -15,35 +15,46 @@ const write = (name, text) => fs.writeFileSync(path.join(DIST, name), text);
 
 const shared = read('shared.js');
 const html = read('overlay/overlay.html');
-// The painted rooms (art/rooms/*.webp) baked in as image addresses, since the overlay may not load files of its own. The dusk sky needs none.
+// The art: the painted rooms (art/rooms/*.webp; the dusk sky needs none) and the characters' animation strips (made by
+// tools/pack-characters.js from the PixelLab frames). The portal's overlay may only show images uploaded to the app (its Images
+// section), named by a template like {image:<hash>.webp} that Chaturbate turns into a link; art/portal-images.json has the template
+// hash of every uploaded file. The preview has no portal, so it gets the same art baked in as image addresses instead.
+const IMAGES_FILE = path.join(ROOT, 'art', 'portal-images.json');
+const portalImages = fs.existsSync(IMAGES_FILE) ? JSON.parse(fs.readFileSync(IMAGES_FILE, 'utf8')) : {};
+function artSrc(file, key, forPortal) {
+  if (!forPortal) return 'data:image/webp;base64,' + fs.readFileSync(file).toString('base64');
+  if (!portalImages[key]) throw new Error(key + ' is not uploaded to the portal: upload it in the IDE (Images) and add its template hash to art/portal-images.json');
+  return '{image:' + portalImages[key] + '.webp}';
+}
 const ROOMS_DIR = path.join(ROOT, 'art', 'rooms');
 const roomNames = fs.existsSync(ROOMS_DIR) ? fs.readdirSync(ROOMS_DIR).filter(f => f.endsWith('.webp')).sort() : [];
-const rooms =
+const roomsJs = forPortal =>
   '// The painted rooms for the console screen, made by tools/build.js from art/rooms (do not edit by hand).\nvar AFTERLIVES_ROOMS = {\n' +
-  roomNames.map(f => '  ' + f.replace(/\.webp$/, '') + ": 'data:image/webp;base64," + fs.readFileSync(path.join(ROOMS_DIR, f)).toString('base64') + "',").join('\n') +
+  roomNames.map(f => '  ' + f.replace(/\.webp$/, '') + ": '" + artSrc(path.join(ROOMS_DIR, f), 'room-' + f.replace(/\.webp$/, ''), forPortal) + "',").join('\n') +
   '\n};\n';
-// The characters' animations (strips made by tools/pack-characters.js from the PixelLab frames), baked in the same way.
 const CHARS_DIR = path.join(ROOT, 'art', 'characters');
 const charManifest = fs.existsSync(path.join(CHARS_DIR, 'characters.json')) ? JSON.parse(fs.readFileSync(path.join(CHARS_DIR, 'characters.json'), 'utf8')) : {};
-const charsOut = {};
-for (const [name, chr] of Object.entries(charManifest)) {
-  const anims = {};
-  for (const [anim, opt] of Object.entries(chr.anims)) {
-    const strip = path.join(CHARS_DIR, name, anim + '.webp');
-    const frames = fs.readdirSync(path.join(CHARS_DIR, name, anim)).filter(f => /^\d+\.png$/.test(f)).length;
-    anims[anim] = { src: 'data:image/webp;base64,' + fs.readFileSync(strip).toString('base64'), n: frames, fps: opt.fps || 8 };
+function charsJs(forPortal) {
+  const out = {};
+  for (const [name, chr] of Object.entries(charManifest)) {
+    const anims = {};
+    for (const [anim, opt] of Object.entries(chr.anims)) {
+      const frames = fs.readdirSync(path.join(CHARS_DIR, name, anim)).filter(f => /^\d+\.png$/.test(f)).length;
+      anims[anim] = { src: artSrc(path.join(CHARS_DIR, name, anim + '.webp'), name + '-' + anim, forPortal), n: frames, fps: opt.fps || 8 };
+    }
+    const cellFile = path.join(CHARS_DIR, name, 'cell.json');
+    out[name] = { name: chr.name, cell: fs.existsSync(cellFile) ? JSON.parse(fs.readFileSync(cellFile, 'utf8')).cell : 124, anims };
   }
-  const cellFile = path.join(CHARS_DIR, name, 'cell.json');
-  charsOut[name] = { name: chr.name, cell: fs.existsSync(cellFile) ? JSON.parse(fs.readFileSync(cellFile, 'utf8')).cell : 124, anims };
+  return '// The characters and their animations, made by tools/build.js from art/characters (do not edit by hand).\nvar AFTERLIVES_CHARS = ' + JSON.stringify(out) + ';\n';
 }
-const chars =
-  '// The characters and their animations, made by tools/build.js from art/characters (do not edit by hand).\nvar AFTERLIVES_CHARS = ' +
-  JSON.stringify(charsOut) +
-  ';\n';
 // the overlay's JS slot is the rooms, the characters, the console (its shapes and colors), their life in the room, then the overlay itself
 // (less their "module.exports" lines, which are only for the tests in Node and which the portal marks as errors)
-const forPortal = text => text.replace(/^if \(typeof module !== 'undefined'.*\n/gm, '');
-const js = rooms + chars + forPortal(read('overlay/console.js')) + '\n' + forPortal(read('overlay/life.js')) + '\n' + read('overlay/overlay.js');
+const noExports = text => text.replace(/^if \(typeof module !== 'undefined'.*\n/gm, '');
+const code = noExports(read('overlay/console.js')) + '\n' + noExports(read('overlay/life.js')) + '\n' + read('overlay/overlay.js');
+// emoji and other non-ASCII characters written as escapes, so the file pastes the same whatever text encoding a copy step assumes
+const asciiOnly = text => text.replace(/[^\x00-\x7f]/g, c => '\\u' + c.charCodeAt(0).toString(16).padStart(4, '0'));
+const js = asciiOnly(roomsJs(true) + charsJs(true) + code);
+const previewJs = roomsJs(false) + charsJs(false) + code;
 
 // the settings page: paste into the IDE's Advanced Settings (one paste instead of creating every setting by hand)
 write('0-advanced-settings.json', JSON.stringify(require('./settings.js')(), null, 2) + '\n');
@@ -116,7 +127,7 @@ function previewTip(n) {
 }
 </script>
 <script>${shared}</script>
-<script>${js}</script>
+<script>${previewJs}</script>
 <script>
 var tipRow = document.getElementById('tips');
 [1, 5, 15, 25, 35, 50].forEach(function (n) {

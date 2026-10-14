@@ -502,7 +502,14 @@
   function kvGet(k, d) {
     return typeof $kv === 'object' && $kv && typeof $kv.get === 'function' ? $kv.get(k, d) : d;
   }
-  showGoal({ progress: Number(kvGet('goal_progress', 0)) || 0, goal: goalOf(settings), name: goalName });
+  // in the overlay $kv.get answers with a promise (in the preview, straight away): either way, show the goal once the progress is known
+  Promise.resolve(kvGet('goal_progress', 0))
+    .catch(function () {
+      return 0;
+    })
+    .then(function (p) {
+      showGoal({ progress: Number(p) || 0, goal: goalOf(settings), name: goalName });
+    });
   $overlay.on('goal', function (g) {
     showGoal(g);
   });

@@ -2,15 +2,19 @@
 // that has to survive between events lives in $kv, never in a variable here.
 
 // The settings page groups settings into sections (fieldsets, see dist/0-advanced-settings.json). In case Chaturbate hands them back nested
-// under their section rather than flat, lift them out, so $settings.room works either way.
+// under their section rather than flat, lift them out, so $settings.room works either way. On the testbed they come flat, in an object
+// whose keys cannot be listed (so a copy made by going through its keys is empty): when there is nothing to lift, hand back the original.
 function flattenSettings(s) {
   var out = {};
+  var nested = false;
   for (var k in s) {
     var v = s[k];
-    if (v && typeof v === 'object' && !Array.isArray(v)) for (var k2 in v) out[k2] = v[k2];
-    else out[k] = v;
+    if (v && typeof v === 'object' && !Array.isArray(v)) {
+      nested = true;
+      for (var k2 in v) out[k2] = v[k2];
+    } else out[k] = v;
   }
-  return out;
+  return nested ? out : s;
 }
 if (typeof $settings === 'object' && $settings) {
   try {
