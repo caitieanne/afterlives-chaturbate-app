@@ -245,16 +245,92 @@ var AfterlivesConsole = (function () {
     return out.trim();
   }
 
-  /** How big the shape is drawn on a page of `w` by `h`: the screen's box on the page, and the scale. */
+  /** The console lives in one corner of the stream and never reaches the middle, where the performer is: this much of the stream's height,
+   * and at most this much of its width. */
+  var CORNER_HEIGHT = 0.38;
+  var CORNER_WIDTH = 0.34;
+  var CORNERS = [
+    ['bottom_right', 'Bottom right'],
+    ['bottom_left', 'Bottom left'],
+    ['top_right', 'Top right'],
+    ['top_left', 'Top left'],
+  ];
+  /** A corner from its id or its name on the settings page; bottom right by default. */
+  function cornerOf(name) {
+    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
+    for (var i = 0; i < CORNERS.length; i++) if (CORNERS[i][0] === key) return CORNERS[i][0];
+    return 'bottom_right';
+  }
+
+  /** How big the shape is drawn on a page of `w` by `h`: the screen's box on the page, and the scale. With a corner, the console sits in
+   * that corner at CORNER_HEIGHT of the page; without one, it fills the page (the tests and old previews). */
   var BAND = 6; // plastic all round the screen, in the shape's units (thin, to show off more of the room)
   var RIM = 2;
   var BEZEL = 2.6;
-  function layout(shape, w, h) {
-    var m = 6;
-    var k = Math.max(0.2, Math.min((w - m * 2) / (shape.w + (BAND + RIM) * 2), (h - m * 2) / (shape.h + (BAND + RIM) * 2)));
+  function layout(shape, w, h, corner) {
+    var m = corner ? Math.max(6, h * 0.02) : 6;
+    var maxW = corner ? w * CORNER_WIDTH : w - m * 2;
+    var maxH = corner ? h * CORNER_HEIGHT : h - m * 2;
+    var k = Math.max(0.2, Math.min(maxW / (shape.w + (BAND + RIM) * 2), maxH / (shape.h + (BAND + RIM) * 2)));
     var sw = shape.w * k;
     var sh = shape.h * k;
-    return { k: k, x: (w - sw) / 2, y: (h - sh) / 2, w: sw, h: sh };
+    var edge = (BAND + RIM) * k;
+    if (!corner) return { k: k, x: (w - sw) / 2, y: (h - sh) / 2, w: sw, h: sh, edge: edge };
+    var right = corner.indexOf('right') >= 0;
+    var bottom = corner.indexOf('bottom') >= 0;
+    return { k: k, x: right ? w - m - edge - sw : m + edge, y: bottom ? h - m - edge - sh : m + edge, w: sw, h: sh, edge: edge, corner: corner };
+  }
+
+  /** Puts the speech bubble over the top of the console's screen, within the console's own width, so nothing reaches the middle of the
+   * stream. (The tip menu goes in chat instead, on a timer; the goal shows in the name pill.) */
+  function placeAround(stage, L) {
+    var u = clamp(L.h / 260, 0.7, 3); // text grows with the console
+    // the name pill stands on the console's bottom edge and grows upward over the screen, so however tall it gets (the goal line), it never
+    // hangs off the bottom of the stream
+    var tag = document.getElementById('tag');
+    if (tag) {
+      var H = stage.clientHeight || window.innerHeight;
+      tag.style.top = 'auto';
+      tag.style.bottom = H - (L.y + L.h + L.edge * 0.5) + 'px';
+      tag.style.transform = 'translateX(-50%)';
+    }
+    var bubble = document.getElementById('bubble');
+    if (bubble) {
+      bubble.style.left = L.x + L.w / 2 + 'px';
+      bubble.style.top = L.y + L.h * 0.05 + 'px';
+      bubble.style.maxWidth = L.w * 0.96 + 'px';
+      bubble.style.fontSize = 15 * u + 'px';
+      bubble.style.zIndex = '900';
+    }
+    return { u: u };
+  }
+
+  /** No console: the character still lives in the same corner, in a box the size the console's screen would be. Returns that box. */
+  function bareCorner(stage, settings, tagEl) {
+    var area = document.createElement('div');
+    area.id = 'screen';
+    area.style.cssText = 'position:absolute;overflow:hidden;';
+    stage.appendChild(area);
+    function place() {
+      var W = stage.clientWidth || window.innerWidth;
+      var H = stage.clientHeight || window.innerHeight;
+      var L = layout(SHAPES.coffin, W, H, cornerOf(settings.console_position));
+      area.style.left = L.x + 'px';
+      area.style.top = L.y + 'px';
+      area.style.width = L.w + 'px';
+      area.style.height = L.h + 'px';
+      if (tagEl) {
+        tagEl.style.left = L.x + L.w / 2 + 'px';
+        tagEl.style.top = L.y + L.h + 'px';
+        tagEl.style.bottom = 'auto';
+        tagEl.style.transform = 'translate(-50%, -50%)';
+        tagEl.style.fontSize = clamp(L.h * 0.042, 7, 28) + 'px';
+      }
+      placeAround(stage, L);
+    }
+    place();
+    window.addEventListener('resize', place);
+    return area;
   }
 
   // ---- putting it on the page ----
@@ -319,7 +395,7 @@ var AfterlivesConsole = (function () {
     function place() {
       var W = stage.clientWidth || window.innerWidth;
       var H = stage.clientHeight || window.innerHeight;
-      var L = layout(shape, W, H);
+      var L = layout(shape, W, H, cornerOf(settings.console_position));
       var d = pathText(shape.path, L.k, L.x, L.y);
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
       var band = BAND * L.k;
@@ -357,18 +433,19 @@ var AfterlivesConsole = (function () {
         tagEl.style.top = L.y + L.h + 'px';
         tagEl.style.bottom = 'auto';
         tagEl.style.transform = 'translate(-50%, -50%)';
-        tagEl.style.fontSize = clamp(L.h * 0.055, 12, 30) + 'px';
+        tagEl.style.fontSize = clamp(L.h * 0.042, 7, 28) + 'px';
         tagEl.style.background = 'rgba(18,10,30,0.74)';
         tagEl.style.borderColor = t.ring;
         tagEl.style.boxShadow = '0 3px 10px rgba(0,0,0,0.45)';
       }
+      placeAround(stage, L);
     }
     place();
     window.addEventListener('resize', place);
     return screen;
   }
 
-  return { COLORS: COLORS, SHAPES: SHAPES, ROOM_LABELS: ROOM_LABELS, SHAPE_LABELS: SHAPE_LABELS, roomKeyOf: roomKeyOf, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
+  return { COLORS: COLORS, SHAPES: SHAPES, ROOM_LABELS: ROOM_LABELS, SHAPE_LABELS: SHAPE_LABELS, CORNERS: CORNERS, cornerOf: cornerOf, bareCorner: bareCorner, roomKeyOf: roomKeyOf, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = AfterlivesConsole;

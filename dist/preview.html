@@ -3,9 +3,9 @@
 <style>
   body { margin: 0; color: #e9dcff; font-family: ui-monospace, Menlo, Consolas, monospace; }
   .page { background: #1c1230; min-height: 100vh; }
-  .wrap { max-width: 520px; margin: 0 auto; padding: 14px; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 14px; }
   h1 { font-size: 16px; text-align: center; }
-  #box { position: relative; width: 480px; height: 360px; margin: 0 auto; border: 2px solid #4b3a68; border-radius: 10px; overflow: hidden;
+  #box { position: relative; width: 640px; height: 360px; margin: 0 auto; border: 2px solid #4b3a68; border-radius: 10px; overflow: hidden;
     background-color: #3a3150; background-image: linear-gradient(45deg,#2f2742 25%,transparent 25%,transparent 75%,#2f2742 75%),linear-gradient(45deg,#2f2742 25%,transparent 25%,transparent 75%,#2f2742 75%); background-size: 24px 24px; background-position: 0 0,12px 12px; }
   .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; justify-content: center; }
   button { background: #3d2a63; color: #fff; border: 2px solid #b79cff; border-radius: 6px; padding: 7px 10px; font: inherit; cursor: pointer; }
@@ -26,12 +26,13 @@
   #menu h4 { margin: 0 0 3px; font-size: 11px; color: #c9a8f2; text-align: center; letter-spacing: 1px; }
   #menu div { display: flex; justify-content: space-between; gap: 12px; line-height: 1.5; }
   #menu b { color: #9be8c4; }
-  #goal { position: absolute; right: 6px; top: 62px; width: 118px; padding: 6px 9px 7px; border-radius: 9px; background: rgba(36, 22, 52, 0.84); border: 2px solid rgba(201, 182, 242, 0.75); color: #f1e8ff; font-size: 11px; font-weight: bold; display: none; transition: transform 0.3s; }
-  #goal h4 { margin: 0 0 4px; font-size: 11px; color: #c9a8f2; text-align: center; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-  #goal .bar { height: 9px; border-radius: 5px; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
-  #goal .bar i { display: block; height: 100%; border-radius: 5px; background: linear-gradient(90deg, #b79cff, #ff9ec8); transition: width 0.6s ease-out; }
-  #goal .n { margin-top: 3px; text-align: center; color: #9be8c4; font-size: 11px; }
-  #goal.cheer { transform: scale(1.12); border-color: #ff9ec8; box-shadow: 0 0 14px rgba(255, 158, 200, 0.7); }
+  /* the tip goal, inside the name pill on the console: "New ring light 120 / 500" and a thin bar */
+  #goal { display: none; flex-wrap: wrap; justify-content: center; gap: 0 0.5em; margin-top: 0.2em; font-size: 0.62em; white-space: nowrap; transition: transform 0.3s; }
+  #goal h4 { margin: 0; font-size: 1em; color: #c9a8f2; max-width: 12em; overflow: hidden; text-overflow: ellipsis; }
+  #goal .n { color: #9be8c4; }
+  #goal .bar { order: 3; flex-basis: 100%; height: 0.55em; margin-top: 0.2em; border-radius: 0.3em; background: rgba(255, 255, 255, 0.14); overflow: hidden; }
+  #goal .bar i { display: block; height: 100%; border-radius: 0.3em; background: linear-gradient(90deg, #b79cff, #ff9ec8); transition: width 0.6s ease-out; }
+  #goal.cheer { transform: scale(1.12); }
   .float { position: absolute; font-size: 26px; pointer-events: none; animation: rise 1.9s ease-out forwards; }
   @keyframes rise { 0% { opacity: 0; transform: translateY(0) scale(0.6); } 15% { opacity: 1; } 100% { opacity: 0; transform: translateY(-130px) scale(1.25); } }
   .confetti { position: absolute; top: -10px; width: 8px; height: 12px; pointer-events: none; animation: fall 2.6s ease-in forwards; }
@@ -45,6 +46,8 @@
   <div id="tag"></div>
 </div>
 </div>
+<div id="chat" style="width:640px;margin:8px auto 0;height:72px;overflow:auto;background:#140c22;border:2px solid #4b3a68;border-radius:8px;padding:6px 8px;font-size:12px;color:#d8c8f0"><b>chat (pretend)</b></div>
+<div class="row"><button onclick="postMenu()">post the tip menu in chat</button></div>
 <div class="row" id="tips"></div>
 <div class="row" id="chars"></div>
 <div class="row" id="shapes"></div>
@@ -59,6 +62,9 @@ var $settings = {};
 q.forEach(function (v, k) { $settings[k] = v === 'true' || v === '1' ? (/^[0-9]+$/.test(v) && k.indexOf('tip_') === 0 ? Number(v) : true) : v === 'false' || v === '0' ? (k.indexOf('tip_') === 0 ? 0 : false) : /^[0-9]+$/.test(v) ? Number(v) : v; });
 var $handlers = {};
 var $overlay = { on: function (n, cb) { $handlers[n] = cb; }, emit: function (n, d) { if ($handlers[n]) $handlers[n](d); } };
+// a pretend chat, so the tip menu notices show up
+var $room = { sendNotice: function (t) { var c = document.getElementById('chat'); var d = document.createElement('div'); d.textContent = 'Notice: ' + t; c.appendChild(d); c.scrollTop = 1e9; } };
+function postMenu() { $room.sendNotice(menuNotice($settings, characterName($settings), $kv.get('goal_progress', 0))); }
 // a pretend $kv, so the tip buttons can count toward the goal the way the Tip Received handler does
 var $kvData = {};
 var $kv = { get: function (k, d) { return k in $kvData ? $kvData[k] : d; }, set: function (k, v) { $kvData[k] = v; } };
@@ -204,6 +210,49 @@ function sendCappedNotice(text) {
 // The goal as the overlay shows it.
 function goalState(progress) {
   return { progress: progress, goal: goalOf($settings), name: String($settings.tip_goal_name || 'Tip goal').slice(0, 30) };
+}
+
+// ---- the tip menu in chat (like Lovense: posted every few minutes, not shown on the overlay, which stays in its corner) ----
+
+var MENU_LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party' };
+
+// How often the menu goes in chat, in minutes (10 by default; 0 or empty: never). At least once every 2 minutes, at most every 2 hours.
+function menuEveryMinutes(settings) {
+  if (settings.tip_menu_in_chat === false) return 0;
+  var v = settings.tip_menu_every;
+  if (v === undefined) v = 10;
+  v = Number(v);
+  if (!isFinite(v) || v <= 0) return 0;
+  return Math.max(2, Math.min(120, Math.round(v)));
+}
+
+// The tip menu as one chat line, with the goal when there is one: "Peachy's tip menu: Wink 1 | Kiss 5 | ... Goal: New ring light 120/500"
+function menuNotice(settings, name, goalProgress) {
+  var items = menuOf(settings).map(function (m) {
+    return MENU_LABEL[m.kind] + ' ' + m.tokens;
+  });
+  var text = '\u{1F48B} ' + name + "'s tip menu: " + items.join(' | ');
+  var goal = goalOf(settings);
+  if (goal) text += '  \u{1F3AF} ' + String(settings.tip_goal_name || 'Tip goal').slice(0, 30) + ': ' + Math.min(goal, Math.max(0, Number(goalProgress) || 0)) + '/' + goal;
+  return text;
+}
+
+// (Re)starts the timer that posts the menu in chat (event handlers only: it uses $callback).
+function startMenuTimer() {
+  try {
+    $callback.cancel('tip_menu');
+  } catch (e) {
+    // nothing to cancel yet
+  }
+  var mins = menuEveryMinutes($settings);
+  if (mins) $callback.create('tip_menu', mins * 60, true);
+}
+
+// The character's name as chat should call it.
+function characterName(settings) {
+  var names = { peachy: 'Peachy', cherries: 'The Cherries', eggy: 'Eggy', bananzo: 'Bananzo' };
+  var key = String(settings.character || '').toLowerCase().replace(/[^a-z]/g, '').replace(/^the/, '');
+  return String(settings.pet_name || names[key] || 'Peachy').slice(0, 16);
 }
 </script>
 <script>// The painted rooms for the console screen, made by tools/build.js from art/rooms (do not edit by hand).
@@ -475,16 +524,92 @@ var AfterlivesConsole = (function () {
     return out.trim();
   }
 
-  /** How big the shape is drawn on a page of `w` by `h`: the screen's box on the page, and the scale. */
+  /** The console lives in one corner of the stream and never reaches the middle, where the performer is: this much of the stream's height,
+   * and at most this much of its width. */
+  var CORNER_HEIGHT = 0.38;
+  var CORNER_WIDTH = 0.34;
+  var CORNERS = [
+    ['bottom_right', 'Bottom right'],
+    ['bottom_left', 'Bottom left'],
+    ['top_right', 'Top right'],
+    ['top_left', 'Top left'],
+  ];
+  /** A corner from its id or its name on the settings page; bottom right by default. */
+  function cornerOf(name) {
+    var key = String(name || '').toLowerCase().replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
+    for (var i = 0; i < CORNERS.length; i++) if (CORNERS[i][0] === key) return CORNERS[i][0];
+    return 'bottom_right';
+  }
+
+  /** How big the shape is drawn on a page of `w` by `h`: the screen's box on the page, and the scale. With a corner, the console sits in
+   * that corner at CORNER_HEIGHT of the page; without one, it fills the page (the tests and old previews). */
   var BAND = 6; // plastic all round the screen, in the shape's units (thin, to show off more of the room)
   var RIM = 2;
   var BEZEL = 2.6;
-  function layout(shape, w, h) {
-    var m = 6;
-    var k = Math.max(0.2, Math.min((w - m * 2) / (shape.w + (BAND + RIM) * 2), (h - m * 2) / (shape.h + (BAND + RIM) * 2)));
+  function layout(shape, w, h, corner) {
+    var m = corner ? Math.max(6, h * 0.02) : 6;
+    var maxW = corner ? w * CORNER_WIDTH : w - m * 2;
+    var maxH = corner ? h * CORNER_HEIGHT : h - m * 2;
+    var k = Math.max(0.2, Math.min(maxW / (shape.w + (BAND + RIM) * 2), maxH / (shape.h + (BAND + RIM) * 2)));
     var sw = shape.w * k;
     var sh = shape.h * k;
-    return { k: k, x: (w - sw) / 2, y: (h - sh) / 2, w: sw, h: sh };
+    var edge = (BAND + RIM) * k;
+    if (!corner) return { k: k, x: (w - sw) / 2, y: (h - sh) / 2, w: sw, h: sh, edge: edge };
+    var right = corner.indexOf('right') >= 0;
+    var bottom = corner.indexOf('bottom') >= 0;
+    return { k: k, x: right ? w - m - edge - sw : m + edge, y: bottom ? h - m - edge - sh : m + edge, w: sw, h: sh, edge: edge, corner: corner };
+  }
+
+  /** Puts the speech bubble over the top of the console's screen, within the console's own width, so nothing reaches the middle of the
+   * stream. (The tip menu goes in chat instead, on a timer; the goal shows in the name pill.) */
+  function placeAround(stage, L) {
+    var u = clamp(L.h / 260, 0.7, 3); // text grows with the console
+    // the name pill stands on the console's bottom edge and grows upward over the screen, so however tall it gets (the goal line), it never
+    // hangs off the bottom of the stream
+    var tag = document.getElementById('tag');
+    if (tag) {
+      var H = stage.clientHeight || window.innerHeight;
+      tag.style.top = 'auto';
+      tag.style.bottom = H - (L.y + L.h + L.edge * 0.5) + 'px';
+      tag.style.transform = 'translateX(-50%)';
+    }
+    var bubble = document.getElementById('bubble');
+    if (bubble) {
+      bubble.style.left = L.x + L.w / 2 + 'px';
+      bubble.style.top = L.y + L.h * 0.05 + 'px';
+      bubble.style.maxWidth = L.w * 0.96 + 'px';
+      bubble.style.fontSize = 15 * u + 'px';
+      bubble.style.zIndex = '900';
+    }
+    return { u: u };
+  }
+
+  /** No console: the character still lives in the same corner, in a box the size the console's screen would be. Returns that box. */
+  function bareCorner(stage, settings, tagEl) {
+    var area = document.createElement('div');
+    area.id = 'screen';
+    area.style.cssText = 'position:absolute;overflow:hidden;';
+    stage.appendChild(area);
+    function place() {
+      var W = stage.clientWidth || window.innerWidth;
+      var H = stage.clientHeight || window.innerHeight;
+      var L = layout(SHAPES.coffin, W, H, cornerOf(settings.console_position));
+      area.style.left = L.x + 'px';
+      area.style.top = L.y + 'px';
+      area.style.width = L.w + 'px';
+      area.style.height = L.h + 'px';
+      if (tagEl) {
+        tagEl.style.left = L.x + L.w / 2 + 'px';
+        tagEl.style.top = L.y + L.h + 'px';
+        tagEl.style.bottom = 'auto';
+        tagEl.style.transform = 'translate(-50%, -50%)';
+        tagEl.style.fontSize = clamp(L.h * 0.042, 7, 28) + 'px';
+      }
+      placeAround(stage, L);
+    }
+    place();
+    window.addEventListener('resize', place);
+    return area;
   }
 
   // ---- putting it on the page ----
@@ -549,7 +674,7 @@ var AfterlivesConsole = (function () {
     function place() {
       var W = stage.clientWidth || window.innerWidth;
       var H = stage.clientHeight || window.innerHeight;
-      var L = layout(shape, W, H);
+      var L = layout(shape, W, H, cornerOf(settings.console_position));
       var d = pathText(shape.path, L.k, L.x, L.y);
       svg.setAttribute('viewBox', '0 0 ' + W + ' ' + H);
       var band = BAND * L.k;
@@ -587,18 +712,19 @@ var AfterlivesConsole = (function () {
         tagEl.style.top = L.y + L.h + 'px';
         tagEl.style.bottom = 'auto';
         tagEl.style.transform = 'translate(-50%, -50%)';
-        tagEl.style.fontSize = clamp(L.h * 0.055, 12, 30) + 'px';
+        tagEl.style.fontSize = clamp(L.h * 0.042, 7, 28) + 'px';
         tagEl.style.background = 'rgba(18,10,30,0.74)';
         tagEl.style.borderColor = t.ring;
         tagEl.style.boxShadow = '0 3px 10px rgba(0,0,0,0.45)';
       }
+      placeAround(stage, L);
     }
     place();
     window.addEventListener('resize', place);
     return screen;
   }
 
-  return { COLORS: COLORS, SHAPES: SHAPES, ROOM_LABELS: ROOM_LABELS, SHAPE_LABELS: SHAPE_LABELS, roomKeyOf: roomKeyOf, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
+  return { COLORS: COLORS, SHAPES: SHAPES, ROOM_LABELS: ROOM_LABELS, SHAPE_LABELS: SHAPE_LABELS, CORNERS: CORNERS, cornerOf: cornerOf, bareCorner: bareCorner, roomKeyOf: roomKeyOf, roomOf: roomOf, colorOf: colorOf, shapeOf: shapeOf, tonesFor: tonesFor, pathText: pathText, layout: layout, mount: mount };
 })();
 
 if (typeof module !== 'undefined' && module.exports) module.exports = AfterlivesConsole;
@@ -867,12 +993,19 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
   var NAME = String(settings.pet_name || (SPRITE ? SPRITE.name : { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER])).slice(0, 16);
   // the console it lives in (see console.js); effects go inside its screen. With console_shape "none" it stands on the stream by itself.
   var fx = (typeof AfterlivesConsole === 'object' && AfterlivesConsole.mount(stage, settings, canvas, tagEl)) || stage;
+  var hasConsole = fx !== stage;
+  // no console: the character still keeps to its corner, never the middle of the stream where the performer is
+  if (!hasConsole && typeof AfterlivesConsole === 'object') {
+    fx = AfterlivesConsole.bareCorner(stage, settings, tagEl);
+    fx.appendChild(canvas);
+    canvas.style.cssText = 'position:absolute;left:0;bottom:0;width:100%;height:auto;aspect-ratio:1;margin:0;image-rendering:pixelated;';
+  }
   // a sprite character lives in the room: walks about, sits at the desk, poses, dances (life.js)
   var life = null;
   if (SPRITE && typeof AfterlivesLife === 'object') {
     canvas.style.display = 'none';
     var roomKey = AfterlivesConsole.roomKeyOf(settings.room);
-    var roomArt = fx !== stage && typeof AfterlivesConsole === 'object' ? AfterlivesConsole.roomOf(settings.room) : null;
+    var roomArt = hasConsole ? AfterlivesConsole.roomOf(settings.room) : null;
     life = AfterlivesLife.mount(fx, SPRITE, roomArt ? roomKey : 'dusk', roomArt);
     window.afterlivesPet = life; // lets the preview page send them to a spot
   }
@@ -1297,14 +1430,7 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
   var sp = document.createElement('span');
   sp.textContent = '♥♥♥♥♡';
   tagEl.appendChild(sp);
-  if (settings.show_menu === true && typeof menuOf === 'function') {
-    var items = menuOf(settings);
-    var LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party!' };
-    menuEl.style.display = 'block';
-    menuEl.innerHTML = '<h4>TIP MENU</h4>' + items.map(function (m) {
-      return '<div><span>' + LABEL[m.kind] + '</span><b>' + m.tokens + '+</b></div>';
-    }).join('');
-  }
+  // the tip menu is not on the overlay: the app posts it in chat on a timer (see handlers/callback.js), so the overlay stays in its corner
   setTimeout(function () {
     say('Hi! I am ' + NAME + '.', 3200);
   }, 1200);
@@ -1320,11 +1446,12 @@ if (typeof module !== 'undefined' && module.exports) module.exports = Afterlives
     if (!goalEl) {
       goalEl = document.createElement('div');
       goalEl.id = 'goal';
-      stage.appendChild(goalEl);
+      // inside the name pill on the console, never out in the middle of the stream
+      tagEl.appendChild(goalEl);
     }
     goalName = String(g.name || goalName).slice(0, 30);
     var pct = Math.max(0, Math.min(100, (g.progress / g.goal) * 100));
-    goalEl.style.display = 'block';
+    goalEl.style.display = 'flex';
     goalEl.innerHTML = '';
     var h = document.createElement('h4');
     h.textContent = goalName;

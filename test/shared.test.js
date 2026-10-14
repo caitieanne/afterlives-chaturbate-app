@@ -7,7 +7,7 @@ const assert = require('assert');
 const ctx = {};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'src', 'shared.js'), 'utf8'), ctx);
-const { pickReaction, commandReaction, menuOf, goalOf, goalStep, idleEverySeconds, noticeAllowed } = ctx;
+const { pickReaction, commandReaction, menuOf, goalOf, goalStep, idleEverySeconds, noticeAllowed, menuEveryMinutes, menuNotice, characterName } = ctx;
 
 const defaults = {};
 const at = n => pickReaction(n, defaults);
@@ -72,6 +72,16 @@ assert.strictEqual(noticeAllowed(ten, hour + 5000, {}).ok, true, 'old ones age o
 assert.strictEqual(noticeAllowed([], 0, { chat_notices_per_hour: 0 }).ok, false, 'zero: no chat notices');
 assert.strictEqual(noticeAllowed([1, 2], 3, { chat_notices_per_hour: 3 }).stamps.length, 3);
 
+// the tip menu in chat
+assert.strictEqual(menuEveryMinutes({}), 10, 'every ten minutes by default');
+assert.strictEqual(menuEveryMinutes({ tip_menu_in_chat: false }), 0, 'switched off');
+assert.strictEqual(menuEveryMinutes({ tip_menu_every: 1 }), 2, 'never more than every two minutes');
+assert.strictEqual(menuEveryMinutes({ tip_menu_every: 0 }), 0);
+assert.strictEqual(menuNotice({}, "Peachy", 0), "💋 Peachy's tip menu: Wink 1 | Kiss 5 | Dance 15 | Smooch 25 | Twerk 35 | Party 50");
+assert.ok(menuNotice({ tip_goal: 500, tip_goal_name: 'New ring light' }, 'Eggy', 120).endsWith('New ring light: 120/500'), 'with the goal');
+assert.strictEqual(characterName({ character: 'The Cherries' }), 'The Cherries');
+assert.strictEqual(characterName({ character: 'Eggy', pet_name: 'Mr Purple' }), 'Mr Purple');
+
 console.log('shared.js: all checks passed');
 
 // the console: every shape and color resolves, and every shape's path is whole numbers, not NaN
@@ -123,4 +133,16 @@ for (const label of page.section_look.settings.room.enum) {
 for (const label of page.section_look.settings.console_shape.enum) assert.ok(label === 'No console' ? C.shapeOf(label) === null : !!C.shapeOf(label), label + ' is a shape');
 for (const c of page.section_look.settings.console_color.enum) assert.strictEqual(C.colorOf(Object.keys(c)[0]).name, Object.values(c)[0]);
 assert.strictEqual(C.shapeOf('Crescent moon'), C.SHAPES.moon);
+// the console keeps to its corner, never the middle of the stream
+for (const corner of C.CORNERS.map(c => c[0])) {
+  for (const name of Object.keys(C.SHAPES)) {
+    const L = C.layout(C.SHAPES[name], 1920, 1080, corner);
+    const top = L.y - L.edge, bottom = L.y + L.h + L.edge, left = L.x - L.edge, right = L.x + L.w + L.edge;
+    assert.ok(bottom - top <= 1080 * 0.381, name + ' is about a third of the stream tall');
+    assert.ok(left >= 0 && right <= 1920 && top >= 0 && bottom <= 1080, name + ' stays on the stream');
+    assert.ok(corner.includes('right') ? left > 1920 / 2 : right < 1920 / 2, name + ' keeps to its side in ' + corner);
+  }
+}
+assert.strictEqual(C.cornerOf('Top left'), 'top_left');
+assert.strictEqual(C.cornerOf(undefined), 'bottom_right');
 console.log('settings page: all checks passed');

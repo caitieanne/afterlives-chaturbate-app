@@ -25,12 +25,19 @@
   var NAME = String(settings.pet_name || (SPRITE ? SPRITE.name : { lumi: 'Lumi', boo: 'Boo', bigfoot: 'Bigfoot' }[CHARACTER])).slice(0, 16);
   // the console it lives in (see console.js); effects go inside its screen. With console_shape "none" it stands on the stream by itself.
   var fx = (typeof AfterlivesConsole === 'object' && AfterlivesConsole.mount(stage, settings, canvas, tagEl)) || stage;
+  var hasConsole = fx !== stage;
+  // no console: the character still keeps to its corner, never the middle of the stream where the performer is
+  if (!hasConsole && typeof AfterlivesConsole === 'object') {
+    fx = AfterlivesConsole.bareCorner(stage, settings, tagEl);
+    fx.appendChild(canvas);
+    canvas.style.cssText = 'position:absolute;left:0;bottom:0;width:100%;height:auto;aspect-ratio:1;margin:0;image-rendering:pixelated;';
+  }
   // a sprite character lives in the room: walks about, sits at the desk, poses, dances (life.js)
   var life = null;
   if (SPRITE && typeof AfterlivesLife === 'object') {
     canvas.style.display = 'none';
     var roomKey = AfterlivesConsole.roomKeyOf(settings.room);
-    var roomArt = fx !== stage && typeof AfterlivesConsole === 'object' ? AfterlivesConsole.roomOf(settings.room) : null;
+    var roomArt = hasConsole ? AfterlivesConsole.roomOf(settings.room) : null;
     life = AfterlivesLife.mount(fx, SPRITE, roomArt ? roomKey : 'dusk', roomArt);
     window.afterlivesPet = life; // lets the preview page send them to a spot
   }
@@ -455,14 +462,7 @@
   var sp = document.createElement('span');
   sp.textContent = '♥♥♥♥♡';
   tagEl.appendChild(sp);
-  if (settings.show_menu === true && typeof menuOf === 'function') {
-    var items = menuOf(settings);
-    var LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party!' };
-    menuEl.style.display = 'block';
-    menuEl.innerHTML = '<h4>TIP MENU</h4>' + items.map(function (m) {
-      return '<div><span>' + LABEL[m.kind] + '</span><b>' + m.tokens + '+</b></div>';
-    }).join('');
-  }
+  // the tip menu is not on the overlay: the app posts it in chat on a timer (see handlers/callback.js), so the overlay stays in its corner
   setTimeout(function () {
     say('Hi! I am ' + NAME + '.', 3200);
   }, 1200);
@@ -478,11 +478,12 @@
     if (!goalEl) {
       goalEl = document.createElement('div');
       goalEl.id = 'goal';
-      stage.appendChild(goalEl);
+      // inside the name pill on the console, never out in the middle of the stream
+      tagEl.appendChild(goalEl);
     }
     goalName = String(g.name || goalName).slice(0, 30);
     var pct = Math.max(0, Math.min(100, (g.progress / g.goal) * 100));
-    goalEl.style.display = 'block';
+    goalEl.style.display = 'flex';
     goalEl.innerHTML = '';
     var h = document.createElement('h4');
     h.textContent = goalName;

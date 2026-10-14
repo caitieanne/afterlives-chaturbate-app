@@ -34,6 +34,9 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
    | `4-handler-user-enter.js` | Event handler: User Enter |
    | `5-handler-fanclub-join.js` | Event handler: Fanclub Join |
 | `9-handler-broadcast-start.js` | Event handler: Broadcast Start |
+| `10-handler-app-start.js` | Event handler: App Start |
+| `11-handler-app-settings-change.js` | Event handler: App Settings Change |
+| `12-handler-callback.js` | Event handler: Callback |
    | `6-overlay-cryptid-html.html` | Broadcast Overlay named `cryptid`: HTML |
    | `7-overlay-cryptid-js.js` | Broadcast Overlay `cryptid`: JS |
    | `8-overlay-shared-code.js` | Broadcast Overlay `cryptid`: Shared code |
@@ -56,7 +59,9 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
 | `tip_kiss` | number | 5 | Tokens for a kiss |
 | `tip_dance` | number | 15 | Tokens for a dance |
 | `tip_party` | number | 50 | Tokens for a party |
-| `show_menu` | checkbox | off | Show the tip menu on the overlay |
+| `tip_menu_in_chat` | checkbox | on | Post the tip menu in chat on a timer (like a Lovense menu) |
+| `tip_menu_every` | number | 10 | Minutes between tip menu posts (2 to 120) |
+| `console_position` | choice | Bottom right | Which corner of the stream it sits in |
 | `chat_commands` | checkbox | on | Chat can use `/wink /kiss /dance /party` (one per person every 10 seconds) |
 | `greet` | checkbox | on | The cryptid waves at followers and token holders who come in |
 | `thank_in_chat` | checkbox | off | Also thank tippers with a notice in chat |
@@ -73,8 +78,9 @@ broadcaster's to change any time in the app's settings screen.
 
 ### Add the overlay to OBS
 
-In the app's page on Chaturbate, copy the overlay `cryptid` address and add it to OBS as a Browser source (480 x 360 is the recommended size).
-It is see-through, so place it over your scene.
+In the app's page on Chaturbate, copy the overlay `cryptid` address and add it to OBS as a Browser source **the size of your whole canvas**
+(for example 1920 x 1080), covering the scene. It is see-through, and everything it shows keeps to one corner (the `Corner` setting),
+about a third of the stream tall, so it never covers you. The tip menu is posted in chat on a timer instead of shown on the overlay.
 
 ## Developing
 

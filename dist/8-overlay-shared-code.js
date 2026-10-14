@@ -130,3 +130,46 @@ function sendCappedNotice(text) {
 function goalState(progress) {
   return { progress: progress, goal: goalOf($settings), name: String($settings.tip_goal_name || 'Tip goal').slice(0, 30) };
 }
+
+// ---- the tip menu in chat (like Lovense: posted every few minutes, not shown on the overlay, which stays in its corner) ----
+
+var MENU_LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party' };
+
+// How often the menu goes in chat, in minutes (10 by default; 0 or empty: never). At least once every 2 minutes, at most every 2 hours.
+function menuEveryMinutes(settings) {
+  if (settings.tip_menu_in_chat === false) return 0;
+  var v = settings.tip_menu_every;
+  if (v === undefined) v = 10;
+  v = Number(v);
+  if (!isFinite(v) || v <= 0) return 0;
+  return Math.max(2, Math.min(120, Math.round(v)));
+}
+
+// The tip menu as one chat line, with the goal when there is one: "Peachy's tip menu: Wink 1 | Kiss 5 | ... Goal: New ring light 120/500"
+function menuNotice(settings, name, goalProgress) {
+  var items = menuOf(settings).map(function (m) {
+    return MENU_LABEL[m.kind] + ' ' + m.tokens;
+  });
+  var text = '\u{1F48B} ' + name + "'s tip menu: " + items.join(' | ');
+  var goal = goalOf(settings);
+  if (goal) text += '  \u{1F3AF} ' + String(settings.tip_goal_name || 'Tip goal').slice(0, 30) + ': ' + Math.min(goal, Math.max(0, Number(goalProgress) || 0)) + '/' + goal;
+  return text;
+}
+
+// (Re)starts the timer that posts the menu in chat (event handlers only: it uses $callback).
+function startMenuTimer() {
+  try {
+    $callback.cancel('tip_menu');
+  } catch (e) {
+    // nothing to cancel yet
+  }
+  var mins = menuEveryMinutes($settings);
+  if (mins) $callback.create('tip_menu', mins * 60, true);
+}
+
+// The character's name as chat should call it.
+function characterName(settings) {
+  var names = { peachy: 'Peachy', cherries: 'The Cherries', eggy: 'Eggy', bananzo: 'Bananzo' };
+  var key = String(settings.character || '').toLowerCase().replace(/[^a-z]/g, '').replace(/^the/, '');
+  return String(settings.pet_name || names[key] || 'Peachy').slice(0, 16);
+}

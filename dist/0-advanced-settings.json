@@ -57,6 +57,18 @@
         ],
         "default": "Dusk sky"
       },
+      "console_position": {
+        "type": "string",
+        "title": "Corner",
+        "description": "Which corner of your stream it sits in. It stays in its corner, about a third of the stream tall, clear of you.",
+        "enum": [
+          "Bottom right",
+          "Bottom left",
+          "Top right",
+          "Top left"
+        ],
+        "default": "Bottom right"
+      },
       "console_shape": {
         "type": "string",
         "title": "Console shape",
@@ -168,10 +180,18 @@
         "maximum": 100000,
         "default": 50
       },
-      "show_menu": {
+      "tip_menu_in_chat": {
         "type": "boolean",
-        "title": "Show the tip menu on the overlay",
-        "default": false
+        "title": "Post the tip menu in chat",
+        "default": true
+      },
+      "tip_menu_every": {
+        "type": "number",
+        "title": "Post it every (minutes)",
+        "description": "How often the tip menu goes in chat, like a Lovense menu. Between 2 and 120.",
+        "minimum": 0,
+        "maximum": 120,
+        "default": 10
       }
     }
   },
@@ -184,7 +204,7 @@
       "tip_goal": {
         "type": "number",
         "title": "Goal (tokens)",
-        "description": "Tips count toward it, and reaching it sets off a big celebration. 0: no goal.",
+        "description": "Tips count toward it, its progress shows on the console and in the chat tip menu, and reaching it sets off a big celebration. 0: no goal.",
         "minimum": 0,
         "maximum": 100000,
         "default": 0
@@ -198,7 +218,7 @@
       },
       "show_goal": {
         "type": "boolean",
-        "title": "Show the goal card on the overlay",
+        "title": "Show the goal on the console",
         "default": true
       },
       "goal_repeats": {

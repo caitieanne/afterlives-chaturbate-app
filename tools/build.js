@@ -53,6 +53,9 @@ write('3-handler-chat-message.js', read('handlers/chat-message.js'));
 write('4-handler-user-enter.js', read('handlers/user-enter.js'));
 write('5-handler-fanclub-join.js', read('handlers/fanclub-join.js'));
 write('9-handler-broadcast-start.js', read('handlers/broadcast-start.js'));
+write('10-handler-app-start.js', read('handlers/app-start.js'));
+write('11-handler-app-settings-change.js', read('handlers/settings-change.js'));
+write('12-handler-callback.js', read('handlers/callback.js'));
 write('6-overlay-cryptid-html.html', html);
 write('7-overlay-cryptid-js.js', js);
 write('8-overlay-shared-code.js', shared); // the overlay's own shared-code slot gets the same functions (it cannot see the app's)
@@ -62,9 +65,9 @@ const preview = `<!doctype html>
 <style>
   body { margin: 0; color: #e9dcff; font-family: ui-monospace, Menlo, Consolas, monospace; }
   .page { background: #1c1230; min-height: 100vh; }
-  .wrap { max-width: 520px; margin: 0 auto; padding: 14px; }
+  .wrap { max-width: 680px; margin: 0 auto; padding: 14px; }
   h1 { font-size: 16px; text-align: center; }
-  #box { position: relative; width: 480px; height: 360px; margin: 0 auto; border: 2px solid #4b3a68; border-radius: 10px; overflow: hidden;
+  #box { position: relative; width: 640px; height: 360px; margin: 0 auto; border: 2px solid #4b3a68; border-radius: 10px; overflow: hidden;
     background-color: #3a3150; background-image: linear-gradient(45deg,#2f2742 25%,transparent 25%,transparent 75%,#2f2742 75%),linear-gradient(45deg,#2f2742 25%,transparent 25%,transparent 75%,#2f2742 75%); background-size: 24px 24px; background-position: 0 0,12px 12px; }
   .row { display: flex; flex-wrap: wrap; gap: 6px; margin: 10px 0; justify-content: center; }
   button { background: #3d2a63; color: #fff; border: 2px solid #b79cff; border-radius: 6px; padding: 7px 10px; font: inherit; cursor: pointer; }
@@ -73,6 +76,8 @@ const preview = `<!doctype html>
 <body><div class="page"><div class="wrap">
 <h1>CRYPTID OVERLAY (preview)</h1>
 <div id="box">${html}</div>
+<div id="chat" style="width:640px;margin:8px auto 0;height:72px;overflow:auto;background:#140c22;border:2px solid #4b3a68;border-radius:8px;padding:6px 8px;font-size:12px;color:#d8c8f0"><b>chat (pretend)</b></div>
+<div class="row"><button onclick="postMenu()">post the tip menu in chat</button></div>
 <div class="row" id="tips"></div>
 <div class="row" id="chars"></div>
 <div class="row" id="shapes"></div>
@@ -87,6 +92,9 @@ var $settings = {};
 q.forEach(function (v, k) { $settings[k] = v === 'true' || v === '1' ? (/^[0-9]+$/.test(v) && k.indexOf('tip_') === 0 ? Number(v) : true) : v === 'false' || v === '0' ? (k.indexOf('tip_') === 0 ? 0 : false) : /^[0-9]+$/.test(v) ? Number(v) : v; });
 var $handlers = {};
 var $overlay = { on: function (n, cb) { $handlers[n] = cb; }, emit: function (n, d) { if ($handlers[n]) $handlers[n](d); } };
+// a pretend chat, so the tip menu notices show up
+var $room = { sendNotice: function (t) { var c = document.getElementById('chat'); var d = document.createElement('div'); d.textContent = 'Notice: ' + t; c.appendChild(d); c.scrollTop = 1e9; } };
+function postMenu() { $room.sendNotice(menuNotice($settings, characterName($settings), $kv.get('goal_progress', 0))); }
 // a pretend $kv, so the tip buttons can count toward the goal the way the Tip Received handler does
 var $kvData = {};
 var $kv = { get: function (k, d) { return k in $kvData ? $kvData[k] : d; }, set: function (k, v) { $kvData[k] = v; } };
@@ -141,4 +149,4 @@ pick('rooms', 'room', ['dusk'].concat(Object.keys(typeof AFTERLIVES_ROOMS === 'o
 </body></html>
 `;
 write('preview.html', preview);
-console.log('built dist/: advanced settings, 9 slot files and preview.html (' + roomNames.length + ' rooms, overlay JS ' + Math.round(js.length / 1024) + ' KB)');
+console.log('built dist/: advanced settings, 12 slot files and preview.html (' + roomNames.length + ' rooms, overlay JS ' + Math.round(js.length / 1024) + ' KB)');
