@@ -33,7 +33,8 @@ for (const [name, chr] of Object.entries(charManifest)) {
     const frames = fs.readdirSync(path.join(CHARS_DIR, name, anim)).filter(f => /^\d+\.png$/.test(f)).length;
     anims[anim] = { src: 'data:image/webp;base64,' + fs.readFileSync(strip).toString('base64'), n: frames, fps: opt.fps || 8 };
   }
-  charsOut[name] = { name: chr.name, anims };
+  const cellFile = path.join(CHARS_DIR, name, 'cell.json');
+  charsOut[name] = { name: chr.name, cell: fs.existsSync(cellFile) ? JSON.parse(fs.readFileSync(cellFile, 'utf8')).cell : 124, anims };
 }
 const chars =
   '// The characters and their animations, made by tools/build.js from art/characters (do not edit by hand).\nvar AFTERLIVES_CHARS = ' +

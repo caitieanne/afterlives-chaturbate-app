@@ -194,8 +194,9 @@ var AfterlivesLife = (function () {
       }
 
       var box = pictureBox();
-      // frames are 124 px squares with the character about 85 px tall in them
-      var size = box.h * 0.4 * depthScale(r, Math.min(py, r.front)) * zoom;
+      // frames are squares of chr.cell px (124 for most) with the character about 85 px tall: a bigger cell is drawn bigger, so every
+      // character comes out the same size
+      var size = box.h * 0.4 * ((chr.cell || 124) / 124) * depthScale(r, Math.min(py, r.front)) * zoom;
       el.style.width = size + 'px';
       el.style.height = size + 'px';
       el.style.backgroundImage = 'url(' + a.src + ')';
