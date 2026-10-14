@@ -268,7 +268,7 @@
       "chat_notices_per_hour": {
         "type": "number",
         "title": "Most chat notices per hour",
-        "description": "The app never posts more than this an hour. 0: none.",
+        "description": "Caps thank-yous in chat; the tip menu has its own timer.",
         "minimum": 0,
         "maximum": 60,
         "default": 10

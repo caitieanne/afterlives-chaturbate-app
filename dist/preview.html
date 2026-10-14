@@ -252,9 +252,10 @@ function startMenuTimer() {
   if (mins) $callback.create('tip_menu', mins * 60, true);
 }
 
+// The broadcaster sets how often the menu goes in chat, so it is not held to (and does not use up) the hourly cap on the app's other notices.
 // Posts the tip menu in chat now, if the broadcaster has it on (event handlers only: it uses $kv and $room).
 function postMenu() {
-  if (menuEveryMinutes($settings)) sendCappedNotice(menuNotice($settings, characterName($settings), $kv.get('goal_progress', 0)));
+  if (menuEveryMinutes($settings)) $room.sendNotice(menuNotice($settings, characterName($settings), $kv.get('goal_progress', 0)));
 }
 
 // The character's name as chat should call it.

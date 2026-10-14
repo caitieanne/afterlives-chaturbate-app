@@ -155,6 +155,7 @@ function menuNotice(settings, name, goalProgress) {
 }
 
 
+// The broadcaster sets how often the menu goes in chat, so it is not held to (and does not use up) the hourly cap on the app's other notices.
 
 // The character's name as chat should call it.
 function characterName(settings) {

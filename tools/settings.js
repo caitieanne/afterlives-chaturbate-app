@@ -55,7 +55,7 @@ module.exports = function advancedSettings() {
       greet: yes('Wave at newcomers', true, 'Followers and people with tokens get a wave when they come in.'),
       thank_in_chat: yes('Thank tippers in chat', false),
       speak_per_hour: num('Things it says on its own, per hour', 6, 'Little lines like "Hydrate, chat!". 0: only when someone plays.', 60),
-      chat_notices_per_hour: num('Most chat notices per hour', 10, 'The app never posts more than this an hour. 0: none.', 60),
+      chat_notices_per_hour: num('Most chat notices per hour', 10, 'Caps thank-yous in chat; the tip menu has its own timer.', 60),
     }),
   });
 };
