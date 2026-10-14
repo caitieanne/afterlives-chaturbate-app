@@ -81,6 +81,11 @@ assert.strictEqual(menuNotice({}, "Peachy", 0), "💋 Peachy's tip menu: Wink 1 
 assert.ok(menuNotice({ tip_goal: 500, tip_goal_name: 'New ring light' }, 'Eggy', 120).endsWith('New ring light: 120/500'), 'with the goal');
 assert.strictEqual(characterName({ character: 'The Cherries' }), 'The Cherries');
 assert.strictEqual(characterName({ character: 'Eggy', pet_name: 'Mr Purple' }), 'Mr Purple');
+// settings: nested sections are lifted out, and the testbed's flat settings object, whose keys cannot be listed, comes back as it is
+assert.strictEqual(ctx.flattenSettings({ section_goal: { tip_goal: 50 }, room: 'Zen' }).tip_goal, 50);
+const unlistable = new Proxy({}, { get: (t, k) => ({ tip_goal: 100, character: 'Eggy' })[k] });
+assert.strictEqual(ctx.flattenSettings(unlistable).tip_goal, 100, 'unlistable settings still read');
+assert.strictEqual(goalOf(ctx.flattenSettings(unlistable)), 100);
 
 console.log('shared.js: all checks passed');
 
@@ -104,11 +109,18 @@ assert.strictEqual(C.colorOf('nope').id, 'coven', 'an unknown color is Coven');
 assert.strictEqual(C.COLORS.length, 10);
 assert.strictEqual(C.roomOf('dusk'), null, 'dusk is the drawn sky');
 assert.strictEqual(C.roomOf(undefined), null, 'the dusk sky by default');
-// every painted room has its art file, and the build bakes them all in
+// every painted room has its art file; the portal overlay names each by its uploaded image template (the portal blocks images baked
+// in), and the preview bakes them in
 const roomFiles = fs.readdirSync(path.join(__dirname, '..', 'art', 'rooms')).filter(f => f.endsWith('.webp'));
 assert.strictEqual(roomFiles.length, 17);
 const slot = fs.readFileSync(path.join(__dirname, '..', 'dist', '7-overlay-cryptid-js.js'), 'utf8');
-for (const f of roomFiles) assert.ok(slot.includes('  ' + f.replace('.webp', '') + ": 'data:image/webp;base64,"), f + ' is in the overlay');
+const preview = fs.readFileSync(path.join(__dirname, '..', 'dist', 'preview.html'), 'utf8');
+for (const f of roomFiles) {
+  assert.ok(new RegExp('  ' + f.replace('.webp', '') + ": '\\{image:[0-9a-f]{40}\\.webp\\}'").test(slot), f + ' is in the overlay as an uploaded image');
+  assert.ok(preview.includes('  ' + f.replace('.webp', '') + ": 'data:image/webp;base64,"), f + ' is baked into the preview');
+}
+assert.ok(!/data:image/.test(slot), 'the overlay has no baked-in images (the portal blocks them)');
+assert.ok(!/[^\x00-\x7f]/.test(slot), 'the overlay is plain ASCII, so it pastes the same in any encoding');
 console.log('console.js: all checks passed');
 
 // the characters' life in their room: every painted room has its spots, and they never pick the spot they are already at
