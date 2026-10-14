@@ -53,7 +53,7 @@
 <div class="row" id="shapes"></div>
 <div class="row" id="colors"></div>
 <div class="row" id="rooms"></div>
-<small>The checks show it is see-through. Settings in the address: ?character=boo&amp;console_shape=heart&amp;console_color=ghoul_gum&amp;show_menu=1</small>
+<small>The checks show it is see-through. Settings in the address: ?character=boo&amp;console_shape=heart&amp;console_color=bubblegum&amp;show_menu=1</small>
 </div></div>
 <script>
 // a pretend Chaturbate: $settings from the address, and an $overlay that hands events straight to the overlay's handlers
@@ -297,16 +297,16 @@ var AFTERLIVES_CHARS = {"peachy":{"name":"Peachy","cell":129,"anims":{"idle":{"s
 var AfterlivesConsole = (function () {
   // ---- colors (names and plastic tones from the game's console colors) ----
   var COLORS = [
-    { id: 'cauldron', name: 'Cauldron', hex: '#2b2b36', dark: true },
-    { id: 'nessie', name: 'Nessie', hex: '#18b2c6' },
-    { id: 'gloomberry', name: 'Gloomberry', hex: '#3f64e0' },
-    { id: 'coven', name: 'Coven', hex: '#8a47d6' },
-    { id: 'ghoul_gum', name: 'Ghoul Gum', hex: '#ff6fb5' },
-    { id: 'vampire', name: 'Vampire', hex: '#e93d58' },
-    { id: 'pumpkin', name: 'Pumpkin', hex: '#ff8a1f' },
-    { id: 'slime', name: 'Slime', hex: '#7fd02e' },
-    { id: 'tombstone', name: 'Tombstone', hex: '#6d7280' },
-    { id: 'ghost', name: 'Ghost', hex: '#bfe4ff' },
+    { id: 'midnight', name: 'Midnight', hex: '#2b2b36', dark: true },
+    { id: 'blue_raspberry', name: 'Blue Raspberry', hex: '#18b2c6' },
+    { id: 'blueberry', name: 'Blueberry', hex: '#3f64e0' },
+    { id: 'grape', name: 'Grape', hex: '#8a47d6' },
+    { id: 'bubblegum', name: 'Bubblegum', hex: '#ff6fb5' },
+    { id: 'cherry', name: 'Cherry', hex: '#e93d58' },
+    { id: 'tangerine', name: 'Tangerine', hex: '#ff8a1f' },
+    { id: 'lime', name: 'Lime', hex: '#7fd02e' },
+    { id: 'smoke', name: 'Smoke', hex: '#6d7280' },
+    { id: 'frost', name: 'Frost', hex: '#bfe4ff' },
   ];
 
   function hexToHsl(hex) {
@@ -348,7 +348,7 @@ var AfterlivesConsole = (function () {
     return [Math.round(a[0] * t + b[0] * (1 - t)), Math.round(a[1] * t + b[1] * (1 - t)), Math.round(a[2] * t + b[2] * (1 - t))];
   }
 
-  /** A color by its name ("coven", "ghoul gum", "Ghoul_Gum" all work) or its hex code (what the settings page's color picker gives), or Coven. */
+  /** A color by its name ("grape", "blue raspberry", "Blue_Raspberry" all work) or its hex code (what the settings page's color picker gives), or Grape. */
   function colorOf(name) {
     var raw = String(name || '').toLowerCase();
     var key = raw.replace(/[^a-z]+/g, '_').replace(/^_|_$/g, '');
