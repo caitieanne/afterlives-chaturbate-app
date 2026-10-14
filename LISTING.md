@@ -1,25 +1,32 @@
-# Listing text (paste into the app's Summary and Description)
+# Listing text (paste into App Details: Summary and Description, with "Description is Markdown" ticked)
 
-**Name:** Afterlives Cam Cryptid
+**Name:** Cam Pal Virtual Pet
 
-**Summary:** A cute pixel cryptid for your stream overlay that winks, blows kisses, dances and throws parties when people tip.
+**Summary:** A sassy fruit pal lives in a cute console in the corner of your stream. Tips make it wink, smooch the screen, twerk and party.
 
 **Description:**
-Add a little cryptid to your stream! Choose Lumi the ring-light moth, Boo the cam ghost, or Bigfoot the blurry influencer, and add the `cryptid`
-overlay to OBS as a Browser source (480 x 360, see-through). Your cryptid lives inside a bubbly see-through handheld console: pick its
-shape (coffin, crescent moon, heart, star, box, diamond, harlequin or circle) and one of ten plastic colors, or no console at all. Its screen
-shows a starry dusk sky or one of 17 cozy rooms: a zen spa, a campfire, a goth parlor, a dreamy bedroom, a vaporwave den and more.
 
-What it does:
-- Tips set off a reaction: a wink, a kiss, a dance or a party. You choose how many tokens each one needs in the app settings, and you can change them any time. A tip below all of them still gets a wink.
-- A new fan club member gets a party.
-- With "greet newcomers" on, it waves at followers and people with tokens when they enter.
-- Anyone in chat can play with it for free with /wink, /kiss, /dance and /party (one per person every 10 seconds). You can switch this off.
-- Optional: show your tip menu on the overlay, and have the cryptid thank tippers in chat too (never more than a set number of chat notices an hour).
-- Optional: set a tip goal. A goal card shows the progress, and reaching it sets off a big celebration. It can start again once reached, and resets at the start of each show unless you choose to carry it over.
-- You choose how chatty it is: how many times an hour it says something on its own (hydrate reminders, posture checks, invitations to /dance), or never.
+Pick your pal: **Peachy**, **The Cherries**, **Eggy** or **Bananzo**, a crew of sassy pixel fruit. Your pal lives in a little room inside a see-through handheld console in one corner of your stream. It wanders between the bed, the desk, the rug and the window, checks its computer, and breaks into a dance when it feels like it.
 
-Who can control it: only you, through the app settings. Chat can only use the four play commands above. The app collects no information and never asks
-anyone for anything but the tips they already choose to send.
+**Tips make it react** (you choose the token amounts):
 
-Made with love by Afterlives, a cozy cryptid pet game.
+- **Wink** (1)
+- **Kiss** (5)
+- **Dance** (15)
+- **Smooch** (25): it walks right up and kisses the screen, leaving a lipstick print
+- **Twerk** (35)
+- **Party** (50) with confetti. New fan club members get one too.
+
+**Your tip menu in chat**, posted when you start and then on a timer you choose, like a Lovense menu.
+
+**A tip goal** on the console, with a big celebration when you reach it. It can start again once reached, and resets each show unless you carry it over.
+
+**Make it yours:** a starry dusk sky or one of 17 painted rooms (goth parlor, starship cabin, dreamy bedroom, vaporwave den, campfire and more), 8 console shapes or none (coffin, crescent moon, heart, star, box, diamond, harlequin, circle), 10 see-through colors, any corner, and its own name.
+
+**Chat can play too:** /wink /kiss /dance /party are free for everyone (one each per person every 10 seconds, and you can turn them off). Your pal can also wave at newcomers, thank tippers in chat, and say little things like "Hydrate, chat!" as often as you like, or never.
+
+**Setup:** add the Cam Pal overlay to OBS as a Browser source the size of your canvas (1920 x 1080). It stays in its corner, about a third of the stream tall, clear of you.
+
+The app collects nothing, and only you can change its settings.
+
+Made by xcaitieragex.
