@@ -28,7 +28,9 @@ if (typeof $settings === 'object' && $settings) {
 // The reactions a tip can set off, cheapest first. Each has a setting (tokens it needs; 0 or empty turns it off).
 var REACTIONS = [
   { kind: 'wink', setting: 'tip_wink', fallback: 1 },
+  { kind: 'blush', setting: 'tip_blush', fallback: 3 }, // shy: hides behind their hands, then peeks out
   { kind: 'kiss', setting: 'tip_kiss', fallback: 5 },
+  { kind: 'vibe', setting: 'tip_vibe', fallback: 10 }, // buzzes all over
   { kind: 'dance', setting: 'tip_dance', fallback: 15 },
   { kind: 'smooch', setting: 'tip_smooch', fallback: 25 }, // walks right up to the camera and kisses the screen
   { kind: 'twerk', setting: 'tip_twerk', fallback: 35 },
@@ -131,7 +133,7 @@ function goalState(progress) {
 
 // ---- the tip menu in chat (like Lovense: posted every few minutes, not shown on the overlay, which stays in its corner) ----
 
-var MENU_LABEL = { wink: 'Wink', kiss: 'Kiss', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party' };
+var MENU_LABEL = { wink: 'Wink', blush: 'Blush', kiss: 'Kiss', vibe: 'Vibe', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party' };
 
 // How often the menu goes in chat, in minutes (10 by default; 0 or empty: never). At least once every 2 minutes, at most every 2 hours.
 function menuEveryMinutes(settings) {

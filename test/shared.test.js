@@ -12,9 +12,13 @@ const { pickReaction, commandReaction, menuOf, goalOf, goalStep, idleEverySecond
 const defaults = {};
 const at = n => pickReaction(n, defaults);
 assert.strictEqual(at(1), 'wink');
-assert.strictEqual(at(4), 'wink');
+assert.strictEqual(at(2), 'wink');
+assert.strictEqual(at(3), 'blush');
+assert.strictEqual(at(4), 'blush');
 assert.strictEqual(at(5), 'kiss');
-assert.strictEqual(at(14), 'kiss');
+assert.strictEqual(at(9), 'kiss');
+assert.strictEqual(at(10), 'vibe');
+assert.strictEqual(at(14), 'vibe');
 assert.strictEqual(at(15), 'dance');
 assert.strictEqual(at(24), 'dance');
 assert.strictEqual(at(25), 'smooch');
@@ -26,7 +30,7 @@ assert.strictEqual(at(5000), 'party');
 assert.strictEqual(at(0), 'wink', 'a tiny tip is still answered');
 
 // the broadcaster's own amounts
-const mine = { tip_wink: 2, tip_kiss: 10, tip_dance: 0, tip_smooch: 0, tip_twerk: 0, tip_party: 100 };
+const mine = { tip_wink: 2, tip_blush: 0, tip_kiss: 10, tip_vibe: 0, tip_dance: 0, tip_smooch: 0, tip_twerk: 0, tip_party: 100 };
 assert.strictEqual(pickReaction(1, mine), 'wink', 'below everything still winks');
 assert.strictEqual(pickReaction(10, mine), 'kiss');
 assert.strictEqual(pickReaction(99, mine), 'kiss', 'dance is off, so 99 stays a kiss');
@@ -45,7 +49,7 @@ assert.strictEqual(commandReaction('hello /kiss'), null);
 assert.strictEqual(commandReaction('/kisses'), null);
 
 assert.strictEqual(menuOf(mine).map(m => m.kind + ':' + m.tokens).join(','), 'wink:2,kiss:10,party:100');
-assert.strictEqual(menuOf(defaults).length, 6);
+assert.strictEqual(menuOf(defaults).length, 8);
 
 // the tip goal
 assert.strictEqual(goalOf({}), 0, 'no goal unless the broadcaster sets one');
@@ -77,7 +81,7 @@ assert.strictEqual(menuEveryMinutes({}), 10, 'every ten minutes by default');
 assert.strictEqual(menuEveryMinutes({ tip_menu_in_chat: false }), 0, 'switched off');
 assert.strictEqual(menuEveryMinutes({ tip_menu_every: 1 }), 2, 'never more than every two minutes');
 assert.strictEqual(menuEveryMinutes({ tip_menu_every: 0 }), 0);
-assert.strictEqual(menuNotice({}, "Peachy", 0), "💋 Peachy's tip menu: Wink 1 | Kiss 5 | Dance 15 | Smooch 25 | Twerk 35 | Party 50");
+assert.strictEqual(menuNotice({}, "Peachy", 0), "💋 Peachy's tip menu: Wink 1 | Blush 3 | Kiss 5 | Vibe 10 | Dance 15 | Smooch 25 | Twerk 35 | Party 50");
 assert.ok(menuNotice({ tip_goal: 500, tip_goal_name: 'New ring light' }, 'Eggy', 120).endsWith('New ring light: 120/500'), 'with the goal');
 assert.strictEqual(characterName({ character: 'The Cherries' }), 'The Cherries');
 assert.strictEqual(characterName({ character: 'Eggy', pet_name: 'Mr Purple' }), 'Mr Purple');

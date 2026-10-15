@@ -140,6 +140,14 @@
         "maximum": 100000,
         "default": 1
       },
+      "tip_blush": {
+        "type": "number",
+        "title": "Blush",
+        "description": "Tokens for a shy blush. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 3
+      },
       "tip_kiss": {
         "type": "number",
         "title": "Kiss",
@@ -147,6 +155,14 @@
         "minimum": 0,
         "maximum": 100000,
         "default": 5
+      },
+      "tip_vibe": {
+        "type": "number",
+        "title": "Vibe",
+        "description": "Tokens to make it buzz all over. 0 turns it off.",
+        "minimum": 0,
+        "maximum": 100000,
+        "default": 10
       },
       "tip_dance": {
         "type": "number",

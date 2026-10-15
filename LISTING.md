@@ -2,7 +2,7 @@
 
 **Name:** Cam Pal Virtual Pet
 
-**Summary:** A sassy fruit pal lives in a cute console in the corner of your stream. Tips make it wink, smooch the screen, twerk and party.
+**Summary:** A sassy fruit pal lives in a cute console in the corner of your stream. Tips make it wink, blush, buzz, smooch the screen, twerk and party!
 
 **Description:**
 
@@ -11,7 +11,9 @@ Pick your pal: **Peachy**, **The Cherries**, **Eggy** or **Bananzo**, a crew of 
 **Tips make it react** (you choose the token amounts):
 
 - **Wink** (1)
+- **Blush** (3): it goes all shy, hides behind its hands and peeks out
 - **Kiss** (5)
+- **Vibe** (10): it buzzes all over
 - **Dance** (15)
 - **Smooch** (25): it walks right up and kisses the screen, leaving a lipstick print
 - **Twerk** (35)

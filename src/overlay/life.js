@@ -49,7 +49,7 @@ var AfterlivesLife = (function () {
   var LIFT = { desk: 0.22, lounge: 0.2 };
 
   /** Reactions: which animation each reaction plays, and how many times through. */
-  var REACT = { wink: ['wink', 1], kiss: ['kiss', 1], dance: ['dance', 2], smooch: ['smooch', 1], twerk: ['twerk', 2], party: ['party', 2], hello: ['wave', 1], goal: ['party', 3], buzz: ['buzz', 2] };
+  var REACT = { wink: ['wink', 1], kiss: ['kiss', 1], dance: ['dance', 2], smooch: ['smooch', 1], twerk: ['twerk', 2], party: ['party', 2], hello: ['wave', 1], goal: ['party', 3], buzz: ['buzz', 2], vibe: ['buzz', 3], blush: ['blush', 2] };
 
   /** The smooch: they come right up to the camera (this long, in seconds), grow this many times bigger, kiss the screen, then go back. */
   var SMOOCH = { travel: 0.7, zoom: 2.4, frontY: 1.02 };
@@ -205,7 +205,10 @@ var AfterlivesLife = (function () {
       var flip = s.react ? false : s.flip;
       var lift = !s.react && !s.walk && LIFT[s.spot] && animName === DO[s.spot].anim ? size * LIFT[s.spot] : 0;
       // feet sit 104 px down each 124 px frame
-      el.style.transform = 'translate(' + (box.x + px * box.w - size / 2) + 'px,' + (box.y + py * box.h - size * 0.84 - lift) + 'px)' + (flip ? ' scaleX(-1)' : '');
+      // a vibe shakes them all over, a little every frame
+      var jx = s.react && s.react.vibe ? (Math.random() - 0.5) * size * 0.05 : 0;
+      var jy = s.react && s.react.vibe ? (Math.random() - 0.5) * size * 0.03 : 0;
+      el.style.transform = 'translate(' + (box.x + px * box.w - size / 2 + jx) + 'px,' + (box.y + py * box.h - size * 0.84 - lift + jy) + 'px)' + (flip ? ' scaleX(-1)' : '');
       el.style.zIndex = String(Math.round(py * 100));
       if (s.react && s.react.smooch && s.react.smooch.marked === 'now') {
         s.react.smooch.marked = true;
@@ -225,7 +228,7 @@ var AfterlivesLife = (function () {
       react: function (kind) {
         var rr = REACT[kind] || REACT.wink;
         var anim = chr.anims[rr[0]] ? rr[0] : 'idle';
-        s.react = { anim: anim, t0: performance.now(), times: rr[1], smooch: kind === 'smooch' && chr.anims.smooch ? { x: s.x, y: s.y } : null };
+        s.react = { anim: anim, t0: performance.now(), times: rr[1], smooch: kind === 'smooch' && chr.anims.smooch ? { x: s.x, y: s.y } : null, vibe: kind === 'vibe' };
       },
     };
   }
