@@ -8,6 +8,7 @@ so the bio never loads anything from afterlives.app. It has no code, only the fi
 | `/campal/{peachy,cherries,eggy,bananzo}.png` | Cam Pal characters (idle frame 0 from `art/characters/`) |
 | `/cryptids/{ghost,sasquatch,swampMonster,mothman,jerseyDevil}.png` | Afterlives adult sprites |
 | `/town/noirleans.png` | Noirleans town art |
+| `/avatar.png` | Profile avatar (square crop from the TBC By Cait art; the bio rounds it) |
 
 Live at `https://caitie-bio.caitie.workers.dev/<path>` once deployed.
 
