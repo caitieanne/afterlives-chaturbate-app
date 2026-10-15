@@ -131,6 +131,20 @@ function goalState(progress) {
   return { progress: progress, goal: goalOf($settings), name: String($settings.tip_goal_name || 'Tip goal').slice(0, 30) };
 }
 
+// ---- the goal in the room subject (the line under the video, where viewers look for a goal) ----
+
+// The room subject: the broadcaster's own text, then the goal and its progress. Empty when there is no goal or the broadcaster turned it off.
+// "Spooky night  \u{1F3AF} New ring light: 120/500"
+function subjectText(settings, goalProgress) {
+  var goal = goalOf(settings);
+  if (!goal || settings.goal_in_subject === false) return '';
+  var base = String(settings.room_subject || '').trim().slice(0, 150);
+  var line = '\u{1F3AF} ' + String(settings.tip_goal_name || 'Tip goal').slice(0, 30) + ': ' + Math.min(goal, Math.max(0, Number(goalProgress) || 0)) + '/' + goal;
+  return base ? base + '  ' + line : line;
+}
+
+// With no goal any more, the broadcaster's own text takes its place, so an old goal does not stay up.
+
 // ---- the tip menu in chat (like Lovense: posted every few minutes, not shown on the overlay, which stays in its corner) ----
 
 var MENU_LABEL = { wink: 'Wink', blush: 'Blush', kiss: 'Kiss', vibe: 'Vibe', dance: 'Dance', smooch: 'Smooch', twerk: 'Twerk', party: 'Party' };

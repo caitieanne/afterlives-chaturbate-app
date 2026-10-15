@@ -247,6 +247,18 @@
         "title": "Start the goal from zero each show",
         "description": "Off: progress carries over to your next show.",
         "default": true
+      },
+      "goal_in_subject": {
+        "type": "boolean",
+        "title": "Show the goal in your room subject",
+        "description": "The line under your video, kept up to date as tips come in.",
+        "default": true
+      },
+      "room_subject": {
+        "type": "string",
+        "title": "Your room subject",
+        "description": "Shown before the goal in the room subject.",
+        "maxLength": 150
       }
     }
   },

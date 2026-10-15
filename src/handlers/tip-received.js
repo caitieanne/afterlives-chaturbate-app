@@ -1,6 +1,6 @@
 // EVENT HANDLER: Tip Received
 // A tip sets off the reaction the tip menu gives that amount. The overlay does the rest (the cryptid blows a kiss, dances, throws a party).
-// With a tip goal set, the tip also counts toward it, and reaching it sets off the big celebration.
+// With a tip goal set, the tip also counts toward it (on the overlay and in the room subject), and reaching it sets off the big celebration.
 
 var who = $tip.isAnon ? 'Someone' : $user.username;
 var kind = pickReaction($tip.tokens, $settings);
@@ -10,6 +10,7 @@ var step = goal ? goalStep($kv.get('goal_progress', 0), $tip.tokens, goal, $sett
 if (step) {
   $kv.set('goal_progress', step.progress);
   $overlay.emit('goal', goalState(step.progress));
+  updateSubject(step.progress);
 }
 
 if (step && step.reached) {
