@@ -51,6 +51,8 @@ module.exports = function advancedSettings() {
       show_goal: yes('Show the goal on the console', true),
       goal_repeats: yes('Start the goal again once it is reached', true),
       goal_reset_each_show: yes('Start the goal from zero each show', true, 'Off: progress carries over to your next show.'),
+      goal_in_subject: yes('Show the goal in your room subject', true, 'The line under your video, kept up to date as tips come in.'),
+      room_subject: { type: 'string', title: 'Your room subject', description: 'Shown before the goal in the room subject.', maxLength: 150 },
     }),
     section_chat: section('Chat', true, {
       chat_commands: yes('Free chat commands', true, 'Anyone can use /wink /kiss /dance /party (every 10 s).'),

@@ -21,7 +21,7 @@ Pick your pal: **Peachy**, **The Cherries**, **Eggy** or **Bananzo**, a crew of 
 
 **Your tip menu in chat**, posted when you start and then on a timer you choose, like a Lovense menu.
 
-**A tip goal** on the console, with a big celebration when you reach it. It can start again once reached, and resets each show unless you carry it over.
+**A tip goal** on the console, with a big celebration when you reach it. It can start again once reached, and resets each show unless you carry it over. The goal and its progress also go in your room subject (the line under your video), with your own subject text in front if you like. You can turn that off.
 
 **Make it yours:** a starry dusk sky or one of 17 painted rooms (goth parlor, starship cabin, dreamy bedroom, vaporwave den, campfire and more), 8 console shapes or none (coffin, crescent moon, heart, star, box, diamond, harlequin, circle), 10 see-through colors, any corner, and its own name.
 

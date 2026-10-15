@@ -74,6 +74,8 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
 | `show_goal` | checkbox | on | Show the goal card (name, progress bar, tokens so far) on the overlay |
 | `goal_repeats` | checkbox | on | Once the goal is reached, start it again (off: it stays full until the next show) |
 | `goal_reset_each_show` | checkbox | on | Start the goal from zero when a show starts (off: progress carries over between shows) |
+| `goal_in_subject` | checkbox | on | While a goal is set, put it in the room subject (the line under the video), kept up to date as tips come in |
+| `room_subject` | text | (empty) | Your own room subject text, shown before the goal. With no goal, it replaces the old goal line |
 
 A tip sets off the priciest reaction it reaches, and a tip below all of them still gets a wink, so every tip is answered. The amounts are the
 broadcaster's to change any time in the app's settings screen.

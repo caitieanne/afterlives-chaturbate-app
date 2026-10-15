@@ -7,7 +7,7 @@ const assert = require('assert');
 const ctx = {};
 vm.createContext(ctx);
 vm.runInContext(fs.readFileSync(path.join(__dirname, '..', 'src', 'shared.js'), 'utf8'), ctx);
-const { pickReaction, commandReaction, menuOf, goalOf, goalStep, idleEverySeconds, noticeAllowed, menuEveryMinutes, menuNotice, characterName } = ctx;
+const { pickReaction, commandReaction, menuOf, goalOf, goalStep, idleEverySeconds, noticeAllowed, menuEveryMinutes, menuNotice, characterName, subjectText } = ctx;
 
 const defaults = {};
 const at = n => pickReaction(n, defaults);
@@ -83,6 +83,13 @@ assert.strictEqual(menuEveryMinutes({ tip_menu_every: 1 }), 2, 'never more than 
 assert.strictEqual(menuEveryMinutes({ tip_menu_every: 0 }), 0);
 assert.strictEqual(menuNotice({}, "Peachy", 0), "💋 Peachy's tip menu: Wink 1 | Blush 3 | Kiss 5 | Vibe 10 | Dance 15 | Smooch 25 | Twerk 35 | Party 50");
 assert.ok(menuNotice({ tip_goal: 500, tip_goal_name: 'New ring light' }, 'Eggy', 120).endsWith('New ring light: 120/500'), 'with the goal');
+
+// the goal in the room subject
+assert.strictEqual(subjectText({}, 50), '', 'no goal, the subject is left alone');
+assert.strictEqual(subjectText({ tip_goal: 500, tip_goal_name: 'New ring light' }, 120), '\u{1F3AF} New ring light: 120/500');
+assert.strictEqual(subjectText({ tip_goal: 500, tip_goal_name: 'New ring light', room_subject: ' Spooky night ' }, 120), 'Spooky night  \u{1F3AF} New ring light: 120/500');
+assert.strictEqual(subjectText({ tip_goal: 500 }, 900), '\u{1F3AF} Tip goal: 500/500', 'never shows more than the goal');
+assert.strictEqual(subjectText({ tip_goal: 500, goal_in_subject: false }, 120), '', 'the broadcaster can turn it off');
 assert.strictEqual(characterName({ character: 'The Cherries' }), 'The Cherries');
 assert.strictEqual(characterName({ character: 'Eggy', pet_name: 'Mr Purple' }), 'Mr Purple');
 // settings: nested sections are lifted out, and the testbed's flat settings object, whose keys cannot be listed, comes back as it is
