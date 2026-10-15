@@ -1,7 +1,7 @@
 # Afterlives: Cam Cryptid (a Chaturbate app)
 
 A little cryptid for your Chaturbate stream. It lives in a **broadcast overlay** (a see-through page you add to OBS) and reacts to what happens in
-your room: tips set off a wink, a kiss, a dance or a party; a fan club join gets a party; newcomers get a wave; chat can play with it for free.
+your room: tips set off a wink, a blush, a kiss, a vibe, a dance, a smooch, a twerk or a party; a fan club join gets a party; newcomers get a wave; chat can play with it for free.
 Three characters to choose from, all drawn in pixel art by the overlay's own script (no images, no outside files):
 
 | Character | Who |
@@ -56,7 +56,9 @@ It is cute and teasing, nothing explicit, so it sits within Chaturbate's app con
 | `room` | choice or text: `dusk`, `zen`, `cyber`, `campfire`, `academia`, `boutique`, `vaporwave`, `starship`, `studio`, `slime`, `cottage`, `neon`, `goth`, `music`, `rooftop`, `gym`, `library`, `dreamy` | `dusk` | What the console's screen shows: the drawn dusk sky, or one of the painted rooms |
 | `console_color` | color picker (hex), or a name: `midnight`, `blue_raspberry`, `blueberry`, `violet`, `bubblegum`, `cherry`, `tangerine`, `lime`, `smoke`, `frost` | Violet (`#8a47d6`) | The console's see-through plastic |
 | `tip_wink` | number | 1 | Tokens for a wink (empty or 0 = off) |
+| `tip_blush` | number | 3 | Tokens for a shy blush (hides behind its hands, then peeks out) |
 | `tip_kiss` | number | 5 | Tokens for a kiss |
+| `tip_vibe` | number | 10 | Tokens for a vibe (buzzes and shakes all over) |
 | `tip_dance` | number | 15 | Tokens for a dance |
 | `tip_party` | number | 50 | Tokens for a party |
 | `tip_menu_in_chat` | checkbox | on | Post the tip menu in chat on a timer (like a Lovense menu) |

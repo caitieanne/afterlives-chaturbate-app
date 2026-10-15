@@ -35,7 +35,9 @@ module.exports = function advancedSettings() {
     }),
     section_tips: section('Tip menu', false, {
       tip_wink: num('Wink', 1, 'Tokens for a wink (smaller tips get one too). 0: off.'),
+      tip_blush: num('Blush', 3, 'Tokens for a shy blush. 0 turns it off.'),
       tip_kiss: num('Kiss', 5, 'Tokens for a blown kiss. 0 turns it off.'),
+      tip_vibe: num('Vibe', 10, 'Tokens to make it buzz all over. 0 turns it off.'),
       tip_dance: num('Dance', 15, 'Tokens for a dance. 0 turns it off.'),
       tip_smooch: num('Smooch', 25, 'Tokens for a smooch on the screen. 0: off.'),
       tip_twerk: num('Twerk', 35, 'Tokens for a twerk. 0 turns it off.'),

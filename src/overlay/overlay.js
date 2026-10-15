@@ -109,7 +109,7 @@
 
   // ---- what the cryptid is doing right now ----
   var react = null; // { kind, t0 }
-  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0, smooch: 3.0, twerk: 3.6 };
+  var DUR = { wink: 1.4, kiss: 1.8, dance: 3.2, party: 4.4, hello: 2.0, goal: 6.0, smooch: 3.0, twerk: 3.6, vibe: 3.4, blush: 2.6 };
   var hearts = []; // the hearts a kiss sends flying: { x, y, vx, vy, t0 }
 
   function pose(t) {
@@ -410,6 +410,8 @@
     hello: ['Hi {u}! Welcome in.', 'Welcome, {u}!', '{u} is here! Hi!'],
     smooch: ['MWAH! A big one for {u}!', '{u} gets a smooch on the screen!', 'Come here, {u}... mwah!'],
     twerk: ['{u} made me twerk!', 'Twerking for {u}!', 'Look at it go, {u}!'],
+    vibe: ['{u} made me buzz!', 'Bzzzz! Thank you, {u}!', 'Good vibes, {u}!'],
+    blush: ['{u} made me blush!', 'Stop it, {u}... *blushes*', 'Aww, {u}!'],
     goal: ['GOAL! {g}! Thank you, {u}!', 'We did it: {g}! {u}, you star!', '{g}: DONE! Thank you all!'],
   };
   // what it says on its own, now and then (how often is the broadcaster's "speak_per_hour"); never anything about money
@@ -430,7 +432,7 @@
     var list = LINES[kind] || LINES.wink;
     return list[Math.floor(Math.random() * list.length)].replace('{u}', user || 'someone').replace('{g}', goalName);
   }
-  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], smooch: ['💋', '💋', '💜', '💋'], twerk: ['🍑', '✨', '🍑', '🎶'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
+  var EMOJI = { wink: ['✨', '💜'], kiss: ['💋', '💜', '💋'], dance: ['✨', '🎶', '⭐', '✨'], party: ['🎉', '✨', '💜', '🎉', '⭐', '💜'], hello: ['👋', '💜'], smooch: ['💋', '💋', '💜', '💋'], twerk: ['🍑', '✨', '🍑', '🎶'], vibe: ['📳', '💜', '📳', '✨'], blush: ['☺️', '💕', '🌸'], goal: ['🏆', '🎉', '✨', '💜', '🎉', '⭐', '🏆', '💜'] };
 
   // ---- events from the app ----
   $overlay.on(
